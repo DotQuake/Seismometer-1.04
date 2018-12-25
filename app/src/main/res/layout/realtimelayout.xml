@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/linechartX"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></com.github.mikephil.charting.charts.LineChart>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/linechartY"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></com.github.mikephil.charting.charts.LineChart>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/linechartZ"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></com.github.mikephil.charting.charts.LineChart>
+    </LinearLayout>
+
+</LinearLayout>
