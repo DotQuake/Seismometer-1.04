@@ -30,18 +30,15 @@ public class RealTime extends Fragment {
 
     public LineChart lineChartX,lineChartY,lineChartZ;
     private SensorManager mSensorManager;
-    private Thread threadx,thready,threadz,thread;
-    boolean recordflag = false;
+    private Thread thread;
     DisplayGraph dgx,dgy,dgz;
     RealTimeController rtc;
     RecordSaveData rsdata;
     BroadcastReceiver br;
     private void smooththread() {
-
         if (thread != null){
             thread.interrupt();
         }
-
         thread = new Thread(new Runnable() {
 
             @Override
@@ -56,18 +53,13 @@ public class RealTime extends Fragment {
                 }
             }
         });
-
         thread.start();
     }
     private void displayRawDataGraph(float x , float y , float z) {
-
             rtc.updateXYZ(x,y,z);
             dgx.displayRawDataGraph(rtc.getX(),lineChartX);
             dgy.displayRawDataGraph(rtc.getY(),lineChartY);
             dgz.displayRawDataGraph(rtc.getZ(),lineChartZ);
-
-
-
     }
     public void showMessage(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
@@ -84,9 +76,6 @@ public class RealTime extends Fragment {
     }
 
     //-----------------------------------------------------------------------------------------------------
-
-
-
 
     @Nullable
     @Override
@@ -166,16 +155,6 @@ public class RealTime extends Fragment {
         if(br != null) {
             getActivity().unregisterReceiver(br); // put unregister here in on pause so that it will unregister if
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
     }
 
     @Override

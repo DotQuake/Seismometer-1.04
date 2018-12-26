@@ -1,19 +1,17 @@
 package com.example.admindeveloper.seismometer.UploadServices;
 
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class ZipManager {
 
 
-    public void decompressGzipFile(String gzipFile, String newFile) {
+   /* public void decompressGzipFile(String gzipFile, String newFile) {
         try {
             File current_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),gzipFile);
             File new_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),newFile);
@@ -32,11 +30,11 @@ public class ZipManager {
             e.printStackTrace();
         }
 
-    }
+    }*/
 
-    public void compressGzipFile(String file, String gzipFile) {
+    public void compressGzipFile(String fileLocation, String gzipFile) {
         try {
-            File current_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),file);
+            File current_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),fileLocation);
             File compressed_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),gzipFile);
 
             FileInputStream fis = new FileInputStream(current_file);
@@ -58,7 +56,7 @@ public class ZipManager {
     }
 
 
-    public void backupgzip() {
+   /* public void backupgzip() {
         byte[] buffer = new byte[1024];
         String fileName =  "test.gzip";
         File file1 = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),fileName);
@@ -90,6 +88,6 @@ public class ZipManager {
             Log.d("file","error");
         }
 
-    }
+    }*/
 
 }

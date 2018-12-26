@@ -45,11 +45,6 @@ public class Compas extends Fragment{
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
