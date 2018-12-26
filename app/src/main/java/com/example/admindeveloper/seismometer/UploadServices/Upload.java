@@ -210,7 +210,7 @@ public class Upload extends Fragment implements View.OnClickListener {
             uploadMultipart();
         }
         if(v == buttonZip){
-            zipManager.compressGzipFile("aw.txt","newest.txt.gz");
+            zipManager.compressGzipFile("aw.txt","Zip/newest.txt.gz");
 
         }
     }

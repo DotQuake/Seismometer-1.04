@@ -32,10 +32,10 @@ public class ZipManager {
 
     }*/
 
-    public void compressGzipFile(String fileLocation, String gzipFile) {
+    public void compressGzipFile(String fileLocation, String gzipFileLocation) {
         try {
             File current_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),fileLocation);
-            File compressed_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),gzipFile);
+            File compressed_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),gzipFileLocation);
 
             FileInputStream fis = new FileInputStream(current_file);
             FileOutputStream fos = new FileOutputStream(compressed_file);

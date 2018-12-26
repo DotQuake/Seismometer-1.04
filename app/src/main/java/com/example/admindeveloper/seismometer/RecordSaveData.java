@@ -25,7 +25,7 @@ public class RecordSaveData {
         y_values.add(y);
         z_values.add(z);
     }
-    public void saveEarthquakeData(String authority)
+    public String saveEarthquakeData(String authority)
     {
         Date currentTime = Calendar.getInstance().getTime();
         String fileName=(currentTime.getYear()+1900)+"-"+(currentTime.getMonth()+1)+"-"+currentTime.getDate()+"-"+currentTime.getHours()+currentTime.getMinutes()+"-"+currentTime.getSeconds()+".csv";
@@ -92,6 +92,7 @@ public class RecordSaveData {
         {
             e.printStackTrace();
         }
+        return fileName;
     }
 }
 
