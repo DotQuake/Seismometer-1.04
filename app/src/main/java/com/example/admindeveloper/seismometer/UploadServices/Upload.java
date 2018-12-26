@@ -79,8 +79,14 @@ public class Upload extends Fragment implements View.OnClickListener {
     }
     public void uploadMultipart() {
         //getting name for the image
-        UPLOAD_URL =  "http://"+ipadress.getText().toString()+"/AndroidPdfUpload/upload.php";
+        UPLOAD_URL =  "http://"+ipadress.getText().toString()+"/data/api/uploaddata.php";
         String name = editText.getText().toString().trim();
+        String location = "Lapulapu";
+        String month = "12";
+        String day = "25";
+        String year = "2018";
+        String hour = "12";
+        String minute = "00";
 
         //getting the actual path of the image
         String path = FilePath.getPath(getActivity(), filePath);
@@ -95,8 +101,14 @@ public class Upload extends Fragment implements View.OnClickListener {
 
                 //Creating a multi part request
                 new MultipartUploadRequest(getActivity(), uploadId, UPLOAD_URL)
-                        .addFileToUpload(path, "csv") //Adding file
+                        .addFileToUpload(path, "gz") //Adding file
                         .addParameter("name", name) //Adding text parameter to the request
+                        .addParameter("location", location)
+                        .addParameter("month", month)
+                        .addParameter("day", day)
+                        .addParameter("year", year)
+                        .addParameter("hour", hour)
+                        .addParameter("minute", minute)
                         .setNotificationConfig(new UploadNotificationConfig())
                         .setMaxRetries(2)
                         .setDelegate(new UploadStatusDelegate() {
@@ -140,7 +152,7 @@ public class Upload extends Fragment implements View.OnClickListener {
     //intent.setType("application/zip");
     private void showFileChooser() {
         Intent intent = new Intent();
-        intent.setType("text/*");
+        intent.setType("application/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select csv"), PICK_CSV_REQUEST);
     }
