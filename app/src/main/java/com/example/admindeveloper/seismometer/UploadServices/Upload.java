@@ -90,6 +90,7 @@ public class Upload extends Fragment implements View.OnClickListener {
 
         //getting the actual path of the image
         String path = FilePath.getPath(getActivity(), filePath);
+        Toast.makeText(getActivity(),path,Toast.LENGTH_SHORT).show();
 
         if (path == null) {
 
@@ -140,12 +141,6 @@ public class Upload extends Fragment implements View.OnClickListener {
                 Toast.makeText(getActivity(), exc.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
-
-
-
-
-
-
 
     }
     //method to show file chooser
