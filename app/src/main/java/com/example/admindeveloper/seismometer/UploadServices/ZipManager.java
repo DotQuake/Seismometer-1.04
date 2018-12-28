@@ -32,7 +32,7 @@ public class ZipManager {
 
     }*/
 
-    public void compressGzipFile(String fileLocation, String gzipFileLocation) {
+    public Boolean compressGzipFile(String fileLocation, String gzipFileLocation) {
         try {
             File current_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),fileLocation);
             File compressed_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),gzipFileLocation);
@@ -49,9 +49,11 @@ public class ZipManager {
             gzipOS.close();
             fos.close();
             fis.close();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
 
     }
 

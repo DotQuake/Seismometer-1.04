@@ -27,6 +27,7 @@ import net.gotev.uploadservice.UploadInfo;
 import net.gotev.uploadservice.UploadNotificationConfig;
 import net.gotev.uploadservice.UploadStatusDelegate;
 
+import java.io.File;
 import java.util.UUID;
 
 
@@ -37,6 +38,7 @@ public class Upload extends Fragment implements View.OnClickListener {
     private Button buttonChoose;
     private Button buttonUpload;
     private Button buttonZip;
+    private Button buttonDelete;
 
     private EditText editText , ipadress;
 
@@ -66,6 +68,7 @@ public class Upload extends Fragment implements View.OnClickListener {
         buttonChoose = (Button) myView.findViewById(R.id.buttonChoose);
         buttonUpload = (Button) myView.findViewById(R.id.buttonUpload);
         buttonZip = (Button) myView.findViewById(R.id.buttonzip);
+        buttonDelete = (Button) myView.findViewById(R.id.buttondelete);
 
         editText = (EditText) myView.findViewById(R.id.editTextName);
         ipadress = myView.findViewById(R.id.ipaddress);
@@ -75,6 +78,7 @@ public class Upload extends Fragment implements View.OnClickListener {
         buttonChoose.setOnClickListener(this);
         buttonUpload.setOnClickListener(this);
         buttonZip.setOnClickListener(this);
+        buttonDelete.setOnClickListener(this);
         return myView;
     }
     public void uploadMultipart() {
@@ -219,6 +223,11 @@ public class Upload extends Fragment implements View.OnClickListener {
         if(v == buttonZip){
             zipManager.compressGzipFile("aw.txt","Zip/newest.txt.gz");
 
+        }
+        if(v == buttonDelete){
+            //File dir = "/storage/emulated/0/Zip";;
+            File file = new File("/storage/emulated/0/Zip/","aw.txt");
+            boolean deleted = file.delete();
         }
     }
 

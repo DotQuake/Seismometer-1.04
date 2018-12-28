@@ -25,10 +25,9 @@ public class RecordSaveData {
         y_values.add(y);
         z_values.add(z);
     }
-    public String saveEarthquakeData(String authority)
+    public Boolean saveEarthquakeData(String authority, String fileName)
     {
         Date currentTime = Calendar.getInstance().getTime();
-        String fileName=(currentTime.getYear()+1900)+"-"+(currentTime.getMonth()+1)+"-"+currentTime.getDate()+"-"+currentTime.getHours()+currentTime.getMinutes()+"-"+currentTime.getSeconds()+".csv";
         File myDir = new File("storage/emulated/0/Samples");
         if(!myDir.exists())
         {
@@ -87,12 +86,13 @@ public class RecordSaveData {
             z_values.clear();
             file.notifyAll();
             myDir.notifyAll();
+            return true;
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
-        return fileName;
+        return false;
     }
 }
 

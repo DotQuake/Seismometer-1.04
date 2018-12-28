@@ -43,4 +43,10 @@
         android:id="@+id/buttonzip"
         android:text="ZIP"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttondelete"
+        android:text="DELETE"/>
+
 </LinearLayout>
