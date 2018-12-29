@@ -10,8 +10,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.FileObserver;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -79,7 +81,9 @@ public class Background extends Service implements SensorEventListener {
     String UPLOAD_URL;
 
     ArrayList<String> csvnames;
-    String status;
+    FileObserver fileObservercsv;
+    FileObserver fileObserverzip;
+
 
     @Nullable
     @Override
@@ -111,11 +115,6 @@ public class Background extends Service implements SensorEventListener {
         final Runnable runnable1 = new Runnable() {
             @Override
             public void run() {
-                /*Boolean save;
-                Boolean compress = false;
-                Date currentTime = Calendar.getInstance().getTime();
-                String fileName=(currentTime.getYear()+1900)+"-"+(currentTime.getMonth()+1)+"-"+currentTime.getDate()+"-"+currentTime.getHours()+currentTime.getMinutes()+"-"+currentTime.getSeconds()+".csv";
-                */
                 // ------------- Set Up -----------
                 Toast.makeText(getApplicationContext(), "Saving in Progress", Toast.LENGTH_SHORT).show();
                 Date currentTime = Calendar.getInstance().getTime();
@@ -125,59 +124,59 @@ public class Background extends Service implements SensorEventListener {
                 recordSaveData.saveEarthquakeData("0", fileName);                                // saving Data to a specific Location (Samples)
                 recordSaveData.clearData();                                                                 // deleting recorded data
                 Toast.makeText(getApplicationContext(), "Data Saved", Toast.LENGTH_SHORT).show();
-                // --------------- Compress ------------------
-                zipManager.compressGzipFile("Samples/" + fileName, "Zip/" + fileName + ".gz");  // Compressing Data
-                Toast.makeText(getApplicationContext(), "Data Compressed", Toast.LENGTH_SHORT).show();
-                // ---------------- Uploading ---------------------
-                for(int ictr=0 ; ictr<csvnames.size() ; ictr++) {
-                    uploadMultipart("/storage/emulated/0/Zip/" + csvnames.get(ictr) + ".gz", csvnames.get(ictr),ictr);
-                }
                 //------------------ Initialize Delay for the next Call -----------------
                 Date settime = Calendar.getInstance().getTime();
                 int secnew = (60 - settime.getSeconds()) * 1000; // seconds delay for minute
                 // ----------------- Recursive Call --------------------------
-                handler.postDelayed(this, secnew);
+                handler.postDelayed(this, 3600000);
             }
         };
-        handler.postDelayed(runnable1, sec); // calling handler for infinite loop
-       /* Runnable runnable = new Runnable() {
+        handler.postDelayed(runnable1, 3600000); // calling handler for infinite loop
+
+       final String csvpath = android.os.Environment.getExternalStorageDirectory().toString() + "/Samples/";
+       fileObservercsv = new FileObserver(csvpath,FileObserver.ALL_EVENTS) {
+           @Override
+           public void onEvent(int event, final String file) {
+               if (event == FileObserver.CREATE ) {
+                  // Log.d("MediaListenerService", "File created [" + csvpath + file + "]");
+                   new Handler(Looper.getMainLooper()).post(new Runnable() {
+                       @Override
+                       public void run() {
+                           Toast.makeText(getBaseContext(), file + " was saved!", Toast.LENGTH_SHORT).show();
+                           zipManager.compressGzipFile("Samples/" + file, "Zip/" + file + ".gz");  // Compressing Data
+
+                       }
+                   });
+               }
+           }
+       };
+       fileObservercsv.startWatching();
+
+        final String zippath = android.os.Environment.getExternalStorageDirectory().toString() + "/Zip/";
+        fileObserverzip = new FileObserver(zippath,FileObserver.ALL_EVENTS) {
             @Override
-            public void run() {
-                handler.postDelayed(runnable1, 60000);
+            public void onEvent(int event, final String file) {
+                if (event == FileObserver.CREATE ) {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getBaseContext(), file + " was compressed!", Toast.LENGTH_SHORT).show();
+                            for(int ictr=0 ; ictr<csvnames.size() ; ictr++) {
+                               uploadMultipart("/storage/emulated/0/Zip/" + csvnames.get(ictr) + ".gz", csvnames.get(ictr),ictr);
+                             }
+
+                        }
+                    });
+                }
             }
-        };*/
+        };
+        fileObserverzip.startWatching();
 
 
 
         return START_STICKY;
     }
 
-    /*private void process(String fileName, Boolean save, Boolean compress, String uploadstatus) {
-        Toast.makeText(getApplicationContext(), "Saving in Progress", Toast.LENGTH_SHORT).show();
-        save = recordSaveData.saveEarthquakeData("0", fileName);                            // saving Data to a specific Location (Samples)
-        if (save) {
-            recordSaveData.clearData();                                                                 // deleting recorded data
-            Toast.makeText(getApplicationContext(), "Data Saved", Toast.LENGTH_SHORT).show();
-            compress = zipManager.compressGzipFile("Samples/" + fileName, "Zip/" + fileName + ".gz");  // Compressing Data
-            if (compress) {
-                Toast.makeText(getApplicationContext(), "Data Compressed", Toast.LENGTH_SHORT).show();
-                //uploadMultipart("/storage/emulated/0/Zip/" + fileName + ".gz", fileName);   // uploading data to server
-                if (uploadstatus.equals("Error")) {
-                    //ArrayList Add
-                } else {
-                    //ArrayList Clear
-                    File file1 = new File("/storage/emulated/0/Samples/", fileName);
-                    boolean deleted1 = file1.delete();
-                    File file2 = new File("/storage/emulated/0/Zip/", fileName + ".gz");
-                    boolean deleted2 = file2.delete();
-                }
-            } else {
-                process(fileName, save, compress, uploadstatus);
-            }
-        } else {
-            process(fileName, save, compress, uploadstatus);
-        }
-    }*/
 
     @Override
     public void onDestroy() {
@@ -187,25 +186,12 @@ public class Background extends Service implements SensorEventListener {
             locationManager.removeUpdates(locationListener);
         }*/
 
-        //player.stop();
     }
-
-   /* public void talk(String code, String data) {
-        Intent i = new Intent();
-        i.putExtra(code, data);
-        i.setAction("FILTER");
-        sendBroadcast(i);
-    }*/
 
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            //talk("valueX",String.valueOf(sensorEvent.values[0]));
-            //talk("valueY",String.valueOf(sensorEvent.values[1]));
-            //talk("valueZ",String.valueOf(sensorEvent.values[2]));
-
-            // i.putExtra("valueX",String.valueOf(sensorEvent.values[0])+"/"+String.valueOf(sensorEvent.values[1])+"/"+String.valueOf(sensorEvent.values[1]));
             realTimeController.updateXYZ(sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
             recordSaveData.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ());
             i.putExtra("valueX", String.valueOf(realTimeController.getX()));

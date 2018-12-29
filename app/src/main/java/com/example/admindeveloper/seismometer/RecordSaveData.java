@@ -29,6 +29,7 @@ public class RecordSaveData {
     {
         Date currentTime = Calendar.getInstance().getTime();
         File myDir = new File("storage/emulated/0/Samples");
+
         if(!myDir.exists())
         {
             myDir.mkdirs();

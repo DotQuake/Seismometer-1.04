@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -221,14 +222,109 @@ public class Upload extends Fragment implements View.OnClickListener {
             uploadMultipart();
         }
         if(v == buttonZip){
-            zipManager.compressGzipFile("aw.txt","Zip/newest.txt.gz");
+           // File file = new File("/storage/emulated/0/");
+           // File file1 = Environment.getExternalStorageDirectory();
+            zipManager.compressGzipFile("aw.txt","Samples/newest.txt.gz");
+           // Toast.makeText(getActivity(),String.valueOf( file.getFreeSpace()),Toast.LENGTH_SHORT).show();
+           // Toast.makeText(getActivity(),String.valueOf( file1),Toast.LENGTH_SHORT).show();
+            /*if(isExternalStorageWritable()){
+                Toast.makeText(getActivity(),"Writable",Toast.LENGTH_SHORT).show();
+            }
+            if(isExternalStorageReadable()){
+                Toast.makeText(getActivity(),"Readable",Toast.LENGTH_SHORT).show();
+            }*/
+            String sdpath,sd1path,usbdiskpath,sd0path;
+
+            if(new File("/storage/extSdCard/").exists())
+            {sdpath="/storage/extSdCard/";
+                Toast.makeText(getActivity(),sdpath,Toast.LENGTH_SHORT).show();}
+
+            if(new File("/storage/sdcard1/").exists())
+            {sd1path="/storage/sdcard1/";
+                Toast.makeText(getActivity(),sd1path,Toast.LENGTH_SHORT).show();}
+
+            if(new File("/storage/usbcard1/").exists())
+            {usbdiskpath="/storage/usbcard1/";
+                Toast.makeText(getActivity(),usbdiskpath,Toast.LENGTH_SHORT).show();}
+
+            if(new File("/storage/sdcard0/").exists())
+            {sd0path="/storage/sdcard0/";
+                Toast.makeText(getActivity(),sd0path,Toast.LENGTH_SHORT).show();}
 
         }
         if(v == buttonDelete){
             //File dir = "/storage/emulated/0/Zip";;
-            File file = new File("/storage/emulated/0/Zip/","aw.txt");
-            boolean deleted = file.delete();
+            //File file = new File("/storage/emulated/0/Zip/","aw.txt");
+            //boolean deleted = file.delete();
+            boolean isSDPresent = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+            boolean isSDSupported = Environment.isExternalStorageRemovable();
+            if(isSDPresent && isSDSupported){
+                Toast.makeText(getActivity(),"SD Card Present",Toast.LENGTH_SHORT).show();
+            }else
+            {
+                Toast.makeText(getActivity(),"No SD Card",Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    /* Checks if external storage is available to at least read */
+    public boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    public String getExternalStoragePath() {
+        String removableStoragePath="";
+        File fileList[] = new File("/storage/").listFiles();
+        for (File file : fileList)
+        {     if(!file.getAbsolutePath().equalsIgnoreCase(Environment.getExternalStorageDirectory().getAbsolutePath()) && file.isDirectory() && file.canRead())
+            removableStoragePath = file.getAbsolutePath();  }
+
+            return removableStoragePath;
+        /*String internalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        String[] paths = internalPath.split("/");
+        String parentPath = "/";
+        for (String s : paths) {
+            if (s.trim().length() > 0) {
+                parentPath = parentPath.concat(s);
+                break;
+            }
+        }
+        File parent = new File(parentPath);
+        if (parent.exists()) {
+            File[] files = parent.listFiles();
+            for (File file : files) {
+                String filePath = file.getAbsolutePath();
+               // Log.d(TAG, filePath);
+                if (filePath.equals(internalPath)) {
+                    continue;
+                } else if (filePath.toLowerCase().contains("sdcard")) {
+                    return filePath;
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    try {
+                        if (Environment.isExternalStorageRemovable(file)) {
+                            return filePath;
+                        }
+                    } catch (RuntimeException e) {
+                        //Log.e(TAG, "RuntimeException: " + e);
+                    }
+                }
+            }
+
+        }
+        return null;*/
     }
 
 

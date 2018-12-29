@@ -37,6 +37,7 @@ public class ZipManager {
             File current_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),fileLocation);
             File compressed_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),gzipFileLocation);
 
+
             FileInputStream fis = new FileInputStream(current_file);
             FileOutputStream fos = new FileOutputStream(compressed_file);
             GZIPOutputStream gzipOS = new GZIPOutputStream(fos);
