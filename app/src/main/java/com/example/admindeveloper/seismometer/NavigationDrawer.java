@@ -1,6 +1,7 @@
 package com.example.admindeveloper.seismometer;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -12,10 +13,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.admindeveloper.seismometer.CompassServices.Compas;
 import com.example.admindeveloper.seismometer.RealTimeServices.RealTime;
@@ -82,7 +87,29 @@ public class NavigationDrawer extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.startservice) {
-            startService(new Intent(this,Background.class));
+            final Intent intent = new Intent(this,Background.class);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Input IP Address");
+            final EditText input = new EditText(this);
+            input.setText("192.168.254.10");
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+            builder.setPositiveButton("START", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    intent.putExtra("ipaddress",input.getText().toString());
+                    startService(intent);
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Toast.makeText(getApplicationContext(),"Starting Service Canceled",Toast.LENGTH_SHORT).show();
+                    dialogInterface.cancel();
+                }
+            });
+            builder.show();
+
         }else if(id == R.id.stopservice){
             stopService(new Intent(this,Background.class));
         }

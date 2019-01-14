@@ -83,6 +83,9 @@ public class Background extends Service implements SensorEventListener {
     ArrayList<String> csvnames;
     FileObserver fileObservercsv;
     FileObserver fileObserverzip;
+    boolean flag = false;
+
+    String ipaddress;
 
 
     @Nullable
@@ -94,6 +97,8 @@ public class Background extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // ---------Initialization ------------------
+        ipaddress = intent.getStringExtra("ipaddress");
+        Toast.makeText(getApplication(), ipaddress, Toast.LENGTH_SHORT).show();
         csvnames = new ArrayList<>();
         zipManager = new ZipManager();
         extras = new Bundle();
@@ -119,19 +124,26 @@ public class Background extends Service implements SensorEventListener {
                 Toast.makeText(getApplicationContext(), "Saving in Progress", Toast.LENGTH_SHORT).show();
                 Date currentTime = Calendar.getInstance().getTime();
                 String fileName = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate() + "-" + currentTime.getHours() +"-" + currentTime.getMinutes() + "-" + currentTime.getSeconds() + ".csv";
-                csvnames.add(fileName);
+
                 // -------------- Save / Clear -------------
-                recordSaveData.saveEarthquakeData("0", fileName);                                // saving Data to a specific Location (Samples)
-                recordSaveData.clearData();                                                                 // deleting recorded data
-                Toast.makeText(getApplicationContext(), "Data Saved", Toast.LENGTH_SHORT).show();
-                //------------------ Initialize Delay for the next Call -----------------
-                Date settime = Calendar.getInstance().getTime();
-                int secnew = (60 - settime.getSeconds()) * 1000; // seconds delay for minute
-                // ----------------- Recursive Call --------------------------
-                handler.postDelayed(this, 3600000);
+                String status = recordSaveData.saveEarthquakeData("0", fileName);                                // saving Data to a specific Location (Samples)
+                Toast.makeText(getApplicationContext(), status, Toast.LENGTH_SHORT).show();
+                if(status.equals("Success") && !flag) {
+                    recordSaveData.clearData();                                                                 // deleting recorded data
+                    csvnames.add(fileName);
+                    //------------------ Initialize Delay for the next Call -----------------
+                    Date settime = Calendar.getInstance().getTime();
+                    int secnew = (60 - settime.getSeconds()) * 1000; // seconds delay for minute
+                    // ----------------- Recursive Call --------------------------
+                    handler.postDelayed(this, secnew);
+                }else if(status.equals("Error") && !flag) {
+                    handler.postDelayed(this, 0);
+                }else{
+
+                }
             }
         };
-        handler.postDelayed(runnable1, 3600000); // calling handler for infinite loop
+        handler.postDelayed(runnable1, sec); // calling handler for infinite loop
 
        final String csvpath = android.os.Environment.getExternalStorageDirectory().toString() + "/Samples/";
        fileObservercsv = new FileObserver(csvpath,FileObserver.ALL_EVENTS) {
@@ -182,6 +194,7 @@ public class Background extends Service implements SensorEventListener {
     public void onDestroy() {
         super.onDestroy();
         mSensorManager.unregisterListener(this);
+        flag = true;
         /*if(locationManager != null){
             locationManager.removeUpdates(locationListener);
         }*/
@@ -197,12 +210,10 @@ public class Background extends Service implements SensorEventListener {
             i.putExtra("valueX", String.valueOf(realTimeController.getX()));
             i.putExtra("valueY", String.valueOf(realTimeController.getY()));
             i.putExtra("valueZ", String.valueOf(realTimeController.getZ()));
-            i.setAction("FILTER");
-
-
         } else if (sensorEvent.sensor.getType() == Sensor.TYPE_ORIENTATION) {
             i.putExtra("compass", String.valueOf(sensorEvent.values[0]));
         }
+        i.setAction("FILTER");
         sendBroadcast(i);
 
     }
@@ -214,7 +225,7 @@ public class Background extends Service implements SensorEventListener {
 
     public void uploadMultipart(String path, final String name, final int index) {
         //getting name for the image
-        UPLOAD_URL = "http://192.168.254.10/data/api/uploaddata.php";
+        UPLOAD_URL = "http://"+ipaddress+"/data/api/uploaddata.php";
         Date currentTime = Calendar.getInstance().getTime();
         //String name=(currentTime.getYear()+1900)+"-"+(currentTime.getMonth()+1)+"-"+currentTime.getDate()+"-"+currentTime.getHours()+currentTime.getMinutes()+"-"+currentTime.getSeconds()+".csv";
         String[] separated = name.split("-");

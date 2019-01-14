@@ -1,22 +1,22 @@
 package com.example.admindeveloper.seismometer.CompassServices;
 
 public class CompassPageController {
-    public float degree;
-    public String direction;
+    private int degree;
+    private String direction;
 
     public String getDirection(){return this.direction;}
     public void setDirection(String direction){this.direction=direction;}
-    public float getDegree() { return degree; }
-    public void setDegree(float degree) {
+    public int getDegree() { return this.degree; }
+    public void setDegree(int degree) {
         this.degree = degree;
     }
-    public void deviceTurned(float degree)
+    public void deviceTurned(int degree)
     {
         this.degree=degree;
         this.direction=this.getDirection(degree);
         return;
     }
-    public float calculateDirection(float x, float y,float z ,float threshold,float degree) {
+    public int calculateDirection(float x, float y,float z ,float threshold,int degree) {
 // From the phone's point of view
         degree = Math.round(degree);
         if (z < threshold) {
@@ -63,7 +63,7 @@ public class CompassPageController {
         return 90;
     }
 
-    public String getDirection(float degree){
+    public String getDirection(int degree){
         String where = "NO";
         degree = Math.round(degree);
         if (degree >= 338 || degree <= 23) {

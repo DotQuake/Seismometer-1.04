@@ -21,13 +21,13 @@ import com.example.admindeveloper.seismometer.R;
 public class Compas extends Fragment{
     View myView;
     private ImageView image;
-    float currentdegree = 0f;
+    int currentdegree = 0;
     TextView mcompass;
     BroadcastReceiver br;
 
     CompassPageController cpc;
 
-    public RotateAnimation displayAnimation(float degree, float currentdegree, ImageView image){
+    public RotateAnimation displayAnimation(int degree, int currentdegree, ImageView image){
         RotateAnimation ra = new RotateAnimation(currentdegree,-degree, Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
         ra.setDuration(210);
         ra.setFillAfter(true);
@@ -47,7 +47,6 @@ public class Compas extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
-
         if(br == null) {
             br = new BroadcastReceiver() {
                 @Override
@@ -55,7 +54,9 @@ public class Compas extends Fragment{
                     //String str = (String) intent.getExtras().get("Extra data name").toString();
                     //Toast.makeText(MainActivity.this,str,Toast.LENGTH_SHORT).show();
                     //text.setText("Value of Accelerometer: " + str);
-                    float deg = Float.parseFloat(intent.getExtras().get("compass").toString());
+                    float value = Float.parseFloat(intent.getExtras().get("compass").toString());
+                    int deg = (int)Math.floor(value);
+                    //float deg = 0;
                     cpc.deviceTurned(deg);
                     if(deg+90 > 360){
 
@@ -72,6 +73,7 @@ public class Compas extends Fragment{
         }
         IntentFilter filt = new IntentFilter("FILTER"); // before
         getActivity().registerReceiver(br, filt);// before
+
         /* AFTER
          registerReceiver(br,new IntentFilter("location_update"));
          */
@@ -83,20 +85,5 @@ public class Compas extends Fragment{
         if(br != null) {
             getActivity().unregisterReceiver(br); // put unregister here in on pause so that it will unregister if
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
     }
 }
