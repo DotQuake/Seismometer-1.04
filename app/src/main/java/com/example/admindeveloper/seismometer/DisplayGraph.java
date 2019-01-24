@@ -29,15 +29,6 @@ public class DisplayGraph {
 
 
         LineData data = rawDataGraph.getData();
-        /*data.setValueFormatter(new IValueFormatter() {
-            long date = System.currentTimeMillis();
-            SimpleDateFormat sdf = new SimpleDateFormat("hh-mm-ss");
-            final String dataString = sdf.format(date);
-            @Override
-            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-                return dataString;
-            }
-        });*/
 
 
         if (data != null) {
@@ -49,9 +40,9 @@ public class DisplayGraph {
                 setx = set1;
                 data.addDataSet(setx);
             }
-
             data.addEntry(new Entry(setx.getEntryCount(), value), 0);
             data.notifyDataChanged();
+
 
             // let the chart know it's data has changed
             rawDataGraph.notifyDataSetChanged();
@@ -62,6 +53,17 @@ public class DisplayGraph {
 
             // move to the latest entry
             rawDataGraph.moveViewToX(data.getEntryCount());
+
+            /*if(data.getEntryCount()>200){
+                for(int x=200;x>=0;x--) {
+                    data.removeEntry(new Entry(x, value), 0);
+                }
+                data.removeDataSet(setx);
+                data.clearValues();
+                setx.clear();
+
+
+            }*/
 
         }
     }

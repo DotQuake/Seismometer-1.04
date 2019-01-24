@@ -13,19 +13,22 @@ public class RecordSaveData {
     private List<Float> x_values = new ArrayList<>();
     private List<Float> y_values = new ArrayList<>();
     private List<Float> z_values = new ArrayList<>();
+    private List<String> time_values = new ArrayList<>();
     private int samplePerSecond=30;
     public void clearData()
     {
         x_values.clear();
         y_values.clear();
         z_values.clear();
+        time_values.clear();
     }
-    public void recordData(float x, float y, float z){
+    public void recordData(float x, float y, float z, String time){
         x_values.add(x);
         y_values.add(y);
         z_values.add(z);
+        time_values.add(time);
     }
-    public String saveEarthquakeData(String authority, String fileName)
+    public String saveEarthquakeData(String authority, String fileName, String gpslong, String gpslat, String compass)
     {
         Date currentTime = Calendar.getInstance().getTime();
         File myDir = new File("storage/emulated/0/Samples");
@@ -51,6 +54,9 @@ public class RecordSaveData {
             bw.write("#peak amplitude,,,,\r\n");
             bw.write("#frequency at P phase,,,,\r\n");
             bw.write(",,,,\r\n");
+            bw.write("longitude : "+ gpslong +"\r\n");
+            bw.write("latitude : "+ gpslat +"\r\n");
+            bw.write("compass : "+ compass +"\r\n");
             bw.write("TIME SERIES,,,,\r\n");
             bw.write("LLPS,LLPS,LLPS,#sitename,\r\n");
             bw.write("EHE _,EHN _,EHZ _,#component,\r\n");
@@ -71,7 +77,7 @@ public class RecordSaveData {
             bw.write("--------,--------,--------,,\r\n");
             for(int count=0;count<x_values.size();count++)
             {
-                bw.write(x_values.get(count)+","+y_values.get(count)+","+z_values.get(count)+","+count+",");
+                bw.write(x_values.get(count)+","+y_values.get(count)+","+z_values.get(count)+","+count+","+time_values.get(count));
                 bw.write("\r\n");
             }
             bw.write("       ,       ,       ,,\r\n" +

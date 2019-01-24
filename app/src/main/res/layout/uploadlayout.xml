@@ -36,7 +36,10 @@
             android:text="Upload" />
 
     </LinearLayout>
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,5 +51,23 @@
         android:layout_height="wrap_content"
         android:id="@+id/buttondelete"
         android:text="DELETE"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonstart"
+        android:text="START"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonstop"
+        android:text="STOP"/>
+</LinearLayout>
+
+    <TextView
+        android:id="@+id/stopwatchtv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Timer"
+        android:textSize="40sp" />
 
 </LinearLayout>

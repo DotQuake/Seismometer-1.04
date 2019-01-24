@@ -4,7 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -124,11 +127,13 @@ public class RealTime extends Fragment implements SensorEventListener{
         super.onCreate(savedInstanceState);
     }
 
+
     @Override
     public void onResume() {
         super.onResume();
 
-        /*if(br == null) {
+
+        if(br == null) {
             br = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -146,7 +151,7 @@ public class RealTime extends Fragment implements SensorEventListener{
             };
         }
         IntentFilter filt = new IntentFilter("FILTER"); // before
-        getActivity().registerReceiver(br, filt);// before*/
+        getActivity().registerReceiver(br, filt);// before
         /* AFTER
          registerReceiver(br,new IntentFilter("location_update"));
          */
@@ -176,7 +181,7 @@ public class RealTime extends Fragment implements SensorEventListener{
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        displayRawDataGraph(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
+        //displayRawDataGraph(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
     }
 
     @Override

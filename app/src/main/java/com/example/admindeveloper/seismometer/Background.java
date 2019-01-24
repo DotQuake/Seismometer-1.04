@@ -1,6 +1,7 @@
 package com.example.admindeveloper.seismometer;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
@@ -9,11 +10,16 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.FileObserver;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -35,18 +41,43 @@ import java.util.UUID;
 
 public class Background extends Service implements SensorEventListener {
 
-    /*private LocationManager locationManager;
+    private SensorManager mSensorManager;
+    private SimpleDateFormat simpleDateFormat;
+    Bundle extras;
+    Intent i;
+    RecordSaveData recordSaveData;
+    RealTimeController realTimeController;
+    Handler handler;
+    ZipManager zipManager;
+    String UPLOAD_URL;
+
+    ArrayList<String> csvnames;
+    FileObserver fileObservercsv;
+    FileObserver fileObserverzip;
+    boolean flag = false;
+
+    long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L;
+    int Seconds, Minutes, MilliSeconds;
+    String time;
+
+    String ipaddress;
+
+    String longitude;
+    String latitutde;
+    String compass;
+
+    private LocationManager locationManager;
     private LocationListener locationListener;
 
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
+        locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                Intent i = new Intent("location_update");
-                i.putExtra("coordinates",location.getLongitude()+" "+location.getLatitude());
-                sendBroadcast(i);
+                longitude = String.valueOf(location.getLongitude());
+                latitutde = String.valueOf(location.getLatitude());
             }
 
             @Override
@@ -66,26 +97,10 @@ public class Background extends Service implements SensorEventListener {
                 startActivity(i);
             }
         };
-        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, locationListener);
+
+
     }
-*/
-    private SensorManager mSensorManager;
-    private SimpleDateFormat simpleDateFormat;
-    Bundle extras;
-    Intent i;
-    RecordSaveData recordSaveData;
-    RealTimeController realTimeController;
-    Handler handler;
-    ZipManager zipManager;
-    String UPLOAD_URL;
-
-    ArrayList<String> csvnames;
-    FileObserver fileObservercsv;
-    FileObserver fileObserverzip;
-    boolean flag = false;
-
-    String ipaddress;
 
 
     @Nullable
@@ -97,6 +112,7 @@ public class Background extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // ---------Initialization ------------------
+        StartTime = SystemClock.uptimeMillis();
         ipaddress = intent.getStringExtra("ipaddress");
         Toast.makeText(getApplication(), ipaddress, Toast.LENGTH_SHORT).show();
         csvnames = new ArrayList<>();
@@ -126,7 +142,7 @@ public class Background extends Service implements SensorEventListener {
                 String fileName = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate() + "-" + currentTime.getHours() +"-" + currentTime.getMinutes() + "-" + currentTime.getSeconds() + ".csv";
 
                 // -------------- Save / Clear -------------
-                String status = recordSaveData.saveEarthquakeData("0", fileName);                                // saving Data to a specific Location (Samples)
+                String status = recordSaveData.saveEarthquakeData("0", fileName, longitude ,latitutde, compass);                                // saving Data to a specific Location (Samples)
                 Toast.makeText(getApplicationContext(), status, Toast.LENGTH_SHORT).show();
                 if(status.equals("Success") && !flag) {
                     recordSaveData.clearData();                                                                 // deleting recorded data
@@ -195,9 +211,9 @@ public class Background extends Service implements SensorEventListener {
         super.onDestroy();
         mSensorManager.unregisterListener(this);
         flag = true;
-        /*if(locationManager != null){
+        if(locationManager != null){
             locationManager.removeUpdates(locationListener);
-        }*/
+        }
 
     }
 
@@ -205,12 +221,16 @@ public class Background extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+
+            time = ""+ SystemClock.uptimeMillis() ;
+
             realTimeController.updateXYZ(sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
-            recordSaveData.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ());
+            recordSaveData.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ(),time);
             i.putExtra("valueX", String.valueOf(realTimeController.getX()));
             i.putExtra("valueY", String.valueOf(realTimeController.getY()));
             i.putExtra("valueZ", String.valueOf(realTimeController.getZ()));
         } else if (sensorEvent.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+            compass = String.valueOf(sensorEvent.values[0]);
             i.putExtra("compass", String.valueOf(sensorEvent.values[0]));
         }
         i.setAction("FILTER");

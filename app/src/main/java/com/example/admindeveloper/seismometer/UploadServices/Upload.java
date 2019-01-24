@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.admindeveloper.seismometer.R;
@@ -40,9 +43,12 @@ public class Upload extends Fragment implements View.OnClickListener {
     private Button buttonUpload;
     private Button buttonZip;
     private Button buttonDelete;
+    private Button buttonStart;
+    private Button buttonStop;
 
     private EditText editText , ipadress;
-
+    private TextView timertv;
+    Handler handler;
     public String UPLOAD_URL ;
 
 
@@ -66,16 +72,23 @@ public class Upload extends Fragment implements View.OnClickListener {
         requestStoragePermission();
 
         //Initializing views
-        buttonChoose = (Button) myView.findViewById(R.id.buttonChoose);
-        buttonUpload = (Button) myView.findViewById(R.id.buttonUpload);
-        buttonZip = (Button) myView.findViewById(R.id.buttonzip);
-        buttonDelete = (Button) myView.findViewById(R.id.buttondelete);
+        buttonChoose =  myView.findViewById(R.id.buttonChoose);
+        buttonUpload =  myView.findViewById(R.id.buttonUpload);
+        buttonZip = myView.findViewById(R.id.buttonzip);
+        buttonDelete =  myView.findViewById(R.id.buttondelete);
+        buttonStart = myView.findViewById(R.id.buttonstart);
+        buttonStop = myView.findViewById(R.id.buttonstop);
+        handler = new Handler();
+
+        timertv = myView.findViewById(R.id.stopwatchtv);
 
         editText = (EditText) myView.findViewById(R.id.editTextName);
         ipadress = myView.findViewById(R.id.ipaddress);
 
 
         //Setting clicklistener
+        buttonStop.setOnClickListener(this);
+        buttonStart.setOnClickListener(this);
         buttonChoose.setOnClickListener(this);
         buttonUpload.setOnClickListener(this);
         buttonZip.setOnClickListener(this);
@@ -213,8 +226,43 @@ public class Upload extends Fragment implements View.OnClickListener {
         }
     }
 
+    long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L ;
+    int Seconds, Minutes, MilliSeconds ;
+    public Runnable runnable = new Runnable() {
+
+        public void run() {
+
+            MillisecondTime = SystemClock.uptimeMillis() - StartTime;
+
+            UpdateTime = TimeBuff + MillisecondTime;
+
+            Seconds = (int) (UpdateTime / 1000);
+
+            Minutes = Seconds / 60;
+
+            Seconds = Seconds % 60;
+
+            MilliSeconds = (int) (UpdateTime % 1000);
+
+            timertv.setText( "" + Minutes + ":"
+                    + String.format("%02d", Seconds) + ":"
+                    + String.format("%03d", MilliSeconds) );
+
+            handler.postDelayed(this, 0);
+        }
+
+    };
+
     @Override
     public void onClick(View v) {
+        if (v == buttonStart) {
+            StartTime = SystemClock.uptimeMillis();
+            handler.postDelayed(runnable, 0);
+        }
+        if (v == buttonStop) {
+            TimeBuff += MillisecondTime;
+            handler.removeCallbacks(runnable);
+        }
         if (v == buttonChoose) {
             showFileChooser();
         }
@@ -266,6 +314,7 @@ public class Upload extends Fragment implements View.OnClickListener {
             }
         }
     }
+    //region SDcard Path
     /* Checks if external storage is available for read and write */
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
@@ -326,7 +375,7 @@ public class Upload extends Fragment implements View.OnClickListener {
         }
         return null;*/
     }
-
+//endregion
 
 
 }
