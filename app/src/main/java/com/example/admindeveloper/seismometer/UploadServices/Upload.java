@@ -302,16 +302,16 @@ public class Upload extends Fragment implements View.OnClickListener {
         }
         if(v == buttonDelete){
             //File dir = "/storage/emulated/0/Zip";;
-            //File file = new File("/storage/emulated/0/Zip/","aw.txt");
-            //boolean deleted = file.delete();
-            boolean isSDPresent = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+            File file = new File("/storage/emulated/0/Zip/","2019-1-27-11-22-0.csv.gz");
+            boolean deleted = file.delete();
+            /*boolean isSDPresent = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
             boolean isSDSupported = Environment.isExternalStorageRemovable();
             if(isSDPresent && isSDSupported){
                 Toast.makeText(getActivity(),"SD Card Present",Toast.LENGTH_SHORT).show();
             }else
             {
                 Toast.makeText(getActivity(),"No SD Card",Toast.LENGTH_SHORT).show();
-            }
+            }*/
         }
     }
     //region SDcard Path

@@ -34,9 +34,14 @@ public class ZipManager {
 
     public Boolean compressGzipFile(String fileLocation, String gzipFileLocation) {
         try {
+            File myDir = new File("storage/emulated/0/Zip");
+            if(!myDir.exists())
+            {
+                myDir.mkdirs();
+            }
             File current_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),fileLocation);
-            File compressed_file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),gzipFileLocation);
-
+            File compressed_file = new File(myDir,gzipFileLocation);
+            compressed_file.createNewFile();
 
             FileInputStream fis = new FileInputStream(current_file);
             FileOutputStream fos = new FileOutputStream(compressed_file);

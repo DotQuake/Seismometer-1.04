@@ -42,10 +42,9 @@ import java.util.UUID;
 public class Background extends Service implements SensorEventListener {
 
     private SensorManager mSensorManager;
-    private SimpleDateFormat simpleDateFormat;
     Bundle extras;
     Intent i;
-    RecordSaveData recordSaveData;
+    RecordSaveData recordSaveData1;
     RealTimeController realTimeController;
     Handler handler;
     ZipManager zipManager;
@@ -54,11 +53,16 @@ public class Background extends Service implements SensorEventListener {
     ArrayList<String> csvnames;
     FileObserver fileObservercsv;
     FileObserver fileObserverzip;
-    boolean flag = false;
 
-    long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L;
-    int Seconds, Minutes, MilliSeconds;
+    boolean compressionflag = false;
+    boolean append = false;
+    int iappendctr = 0;
+    final int limitappend = 1;
+
+    long StartTime;
     String time;
+
+    String fileName;
 
     String ipaddress;
 
@@ -68,6 +72,9 @@ public class Background extends Service implements SensorEventListener {
 
     private LocationManager locationManager;
     private LocationListener locationListener;
+
+    Runnable runnable;
+
 
     @SuppressLint("MissingPermission")
     @Override
@@ -110,8 +117,8 @@ public class Background extends Service implements SensorEventListener {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // ---------Initialization ------------------
+    public int onStartCommand(Intent intent, int flags, final int startId) {
+        //region ---------Initialization ------------------
         StartTime = SystemClock.uptimeMillis();
         ipaddress = intent.getStringExtra("ipaddress");
         Toast.makeText(getApplication(), ipaddress, Toast.LENGTH_SHORT).show();
@@ -119,59 +126,87 @@ public class Background extends Service implements SensorEventListener {
         zipManager = new ZipManager();
         extras = new Bundle();
         i = new Intent();
-        recordSaveData = new RecordSaveData();
+        recordSaveData1 = new RecordSaveData();
         realTimeController = new RealTimeController();
         handler = new Handler();
+        //endregion
         Toast.makeText(getApplication(), "Services Enabled", Toast.LENGTH_SHORT).show();
-        // ---------------------Register Listeners for Sensors( Accelerometer / Orientation) Temporarily
+        //region ---------------------Register Listeners for Sensors( Accelerometer / Orientation) Temporarily
         mSensorManager = (SensorManager) getSystemService(Activity.SENSOR_SERVICE);
         mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION).get(0), SensorManager.SENSOR_DELAY_GAME);
-        // ------------------- Set up for Delay / Start Up --------------------
+        //endregion
+        //region ------------------- Set up for Delay / Start Up --------------------
         Calendar calendar = Calendar.getInstance();                     // getting instance
-        simpleDateFormat = new SimpleDateFormat("ss");       // format hour
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("ss");       // format hour
         Date date = calendar.getTime();                             // getting current time
         final int sec = (60 - Integer.parseInt(simpleDateFormat.format(date))) * 1000; // parsing string to int
-        //---------------------Special Delay Call (Infinite Loop in an definite delay)--------------------
-        final Runnable runnable1 = new Runnable() {
-            @Override
-            public void run() {
-                // ------------- Set Up -----------
-                Toast.makeText(getApplicationContext(), "Saving in Progress", Toast.LENGTH_SHORT).show();
-                Date currentTime = Calendar.getInstance().getTime();
-                String fileName = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate() + "-" + currentTime.getHours() +"-" + currentTime.getMinutes() + "-" + currentTime.getSeconds() + ".csv";
+        //endregion
 
-                // -------------- Save / Clear -------------
-                String status = recordSaveData.saveEarthquakeData("0", fileName, longitude ,latitutde, compass);                                // saving Data to a specific Location (Samples)
-                Toast.makeText(getApplicationContext(), status, Toast.LENGTH_SHORT).show();
-                if(status.equals("Success") && !flag) {
-                    recordSaveData.clearData();                                                                 // deleting recorded data
-                    csvnames.add(fileName);
-                    //------------------ Initialize Delay for the next Call -----------------
-                    Date settime = Calendar.getInstance().getTime();
-                    int secnew = (60 - settime.getSeconds()) * 1000; // seconds delay for minute
-                    // ----------------- Recursive Call --------------------------
-                    handler.postDelayed(this, secnew);
-                }else if(status.equals("Error") && !flag) {
-                    handler.postDelayed(this, 0);
-                }else{
+        //region ---------------------(HANDLER) Special Delay Call (Infinite Loop in an definite delay)--------------------
 
-                }
-            }
-        };
-        handler.postDelayed(runnable1, sec); // calling handler for infinite loop
+                runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        // ------------- Se Up -----------
+                        String status;
+                       // Toast.makeText(getApplicationContext(), "Saving in Progress", Toast.LENGTH_SHORT).show();
+                        if(iappendctr == 0 && !append) {
+                            compressionflag = false;
+                            Date currentTime = Calendar.getInstance().getTime();
+                            fileName = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate() + "-" + currentTime.getHours() + "-" + currentTime.getMinutes() + "-" + currentTime.getSeconds() + ".csv";
+                        }
+                        // -------------- Save / Clear -------------
+                        if(iappendctr+1 >= limitappend) {
+                            compressionflag = true;
+                        }
+                            status = recordSaveData1.saveEarthquakeData("0", fileName, longitude, latitutde, compass, append , iappendctr, limitappend);      // saving Data to a specific Location (Samples)
 
+
+                        Toast.makeText(getApplicationContext(), status, Toast.LENGTH_SHORT).show();
+                        switch (status){
+                            case "Success":{
+                                recordSaveData1.clearData();          // deleting recorded data
+                                append = true;
+                                iappendctr++;
+                                if(iappendctr >= limitappend) {
+                                    csvnames.add(fileName);
+                                    iappendctr = 0;
+                                    append = false;
+                                }
+
+                                //------------------ Initialize Delay for the next Call -----------------
+                                Date settime = Calendar.getInstance().getTime();
+                                int secnew = (60 - settime.getSeconds()) * 1000; // seconds delay for minute
+                                // ----------------- Recursive Call --------------------------
+                                handler.postDelayed(this, secnew);
+                                break;
+                            }
+                            case "Error":{
+                                handler.postDelayed(this, 0);
+                                break;
+                            }
+                            default:{
+                                break;
+                            }
+                        }
+                    }
+                };
+                handler.postDelayed(runnable, sec); // calling handler for infinite loop
+        //endregion
+
+        //region --------- FileObserver for Compression -------
        final String csvpath = android.os.Environment.getExternalStorageDirectory().toString() + "/Samples/";
        fileObservercsv = new FileObserver(csvpath,FileObserver.ALL_EVENTS) {
            @Override
            public void onEvent(int event, final String file) {
-               if (event == FileObserver.CREATE ) {
+               if (event == FileObserver.CLOSE_WRITE && compressionflag) {
                   // Log.d("MediaListenerService", "File created [" + csvpath + file + "]");
                    new Handler(Looper.getMainLooper()).post(new Runnable() {
                        @Override
                        public void run() {
-                           Toast.makeText(getBaseContext(), file + " was saved!", Toast.LENGTH_SHORT).show();
-                           zipManager.compressGzipFile("Samples/" + file, "Zip/" + file + ".gz");  // Compressing Data
+                          // Toast.makeText(getBaseContext(), file + " was saved!", Toast.LENGTH_SHORT).show();
+                           zipManager.compressGzipFile("Samples/" + file,  file + ".gz");  // Compressing Data
 
                        }
                    });
@@ -179,16 +214,18 @@ public class Background extends Service implements SensorEventListener {
            }
        };
        fileObservercsv.startWatching();
+        //endregion
 
+        //region  -------- FileObserver for Sending Data to Database -------------
         final String zippath = android.os.Environment.getExternalStorageDirectory().toString() + "/Zip/";
         fileObserverzip = new FileObserver(zippath,FileObserver.ALL_EVENTS) {
             @Override
             public void onEvent(int event, final String file) {
-                if (event == FileObserver.CREATE ) {
+                if (event == FileObserver.CREATE) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getBaseContext(), file + " was compressed!", Toast.LENGTH_SHORT).show();
+                           // Toast.makeText(getBaseContext(), file + " was compressed!", Toast.LENGTH_SHORT).show();
                             for(int ictr=0 ; ictr<csvnames.size() ; ictr++) {
                                uploadMultipart("/storage/emulated/0/Zip/" + csvnames.get(ictr) + ".gz", csvnames.get(ictr),ictr);
                              }
@@ -199,7 +236,7 @@ public class Background extends Service implements SensorEventListener {
             }
         };
         fileObserverzip.startWatching();
-
+        //endregion
 
 
         return START_STICKY;
@@ -210,7 +247,8 @@ public class Background extends Service implements SensorEventListener {
     public void onDestroy() {
         super.onDestroy();
         mSensorManager.unregisterListener(this);
-        flag = true;
+        Toast.makeText(this,"Service Stopped",Toast.LENGTH_SHORT).show();
+        handler.removeCallbacks(runnable);
         if(locationManager != null){
             locationManager.removeUpdates(locationListener);
         }
@@ -225,7 +263,7 @@ public class Background extends Service implements SensorEventListener {
             time = ""+ SystemClock.uptimeMillis() ;
 
             realTimeController.updateXYZ(sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
-            recordSaveData.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ(),time);
+            recordSaveData1.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ(), time);
             i.putExtra("valueX", String.valueOf(realTimeController.getX()));
             i.putExtra("valueY", String.valueOf(realTimeController.getY()));
             i.putExtra("valueZ", String.valueOf(realTimeController.getZ()));
@@ -246,7 +284,6 @@ public class Background extends Service implements SensorEventListener {
     public void uploadMultipart(String path, final String name, final int index) {
         //getting name for the image
         UPLOAD_URL = "http://"+ipaddress+"/data/api/uploaddata.php";
-        Date currentTime = Calendar.getInstance().getTime();
         //String name=(currentTime.getYear()+1900)+"-"+(currentTime.getMonth()+1)+"-"+currentTime.getDate()+"-"+currentTime.getHours()+currentTime.getMinutes()+"-"+currentTime.getSeconds()+".csv";
         String[] separated = name.split("-");
         String location = "Lapulapu";
