@@ -86,7 +86,7 @@ public class RecordSaveData {
             for(int count=0;count<x_values.size();count++) {
                 bw.write(x_values.get(count)+","+y_values.get(count)+","+z_values.get(count)+","+((sum_of_samples-x_values.size())+count)+","+time_values.get(count)+"\r\n");
             }
-            if(append && iappendctr+1 >= limitappend) {
+            if(iappendctr+1 >= limitappend) {
                 bw.write("       ,       ,       ,,\r\n" +
                         "       ,       ,       ,,\r\n" +
                         "END,END,END,,\r\n");
