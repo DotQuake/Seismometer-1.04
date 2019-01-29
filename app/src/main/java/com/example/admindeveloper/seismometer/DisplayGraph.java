@@ -13,14 +13,10 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 public class DisplayGraph {
 
-    LineDataSet set1;
-    LineDataSet set2;
-    LineDataSet set3;
+   private LineDataSet set1;
     public void clearData(LineChart rawDataGraph)
     {
         set1.clear();
-        set2.clear();
-        set3.clear();
         rawDataGraph.invalidate();
         rawDataGraph.notifyDataSetChanged();
     }
@@ -143,14 +139,20 @@ public class DisplayGraph {
         set1 = new LineDataSet(null,label);
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setLineWidth(1f);
-        if(label == "X"){
-            set1.setColor(Color.MAGENTA);
-        }else if(label == "Y"){
-            set1.setColor(Color.BLUE);
-        }else{
-            set1.setColor(Color.BLACK);
+        switch (label){
+            case "X":{
+                set1.setColor(Color.MAGENTA);
+                break;
+            }
+            case "Y":{
+                set1.setColor(Color.BLUE);
+                break;
+            }
+            default:{
+                set1.setColor(Color.BLACK);
+                break;
+            }
         }
-
         set1.setHighlightEnabled(false);
         set1.setDrawValues(false);
         set1.setDrawCircles(false);

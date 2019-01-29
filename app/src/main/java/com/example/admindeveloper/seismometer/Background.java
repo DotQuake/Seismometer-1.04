@@ -33,10 +33,8 @@ import net.gotev.uploadservice.UploadNotificationConfig;
 import net.gotev.uploadservice.UploadStatusDelegate;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 
 public class Background extends Service implements SensorEventListener {
@@ -58,6 +56,7 @@ public class Background extends Service implements SensorEventListener {
     boolean append = false;
     int iappendctr = 0;
     final int limitappend = 1;
+    int sec;
 
     long StartTime;
     String time;
@@ -138,10 +137,9 @@ public class Background extends Service implements SensorEventListener {
         mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION).get(0), SensorManager.SENSOR_DELAY_GAME);
         //endregion
         //region ------------------- Set up for Delay / Start Up --------------------
-        Calendar calendar = Calendar.getInstance();                     // getting instance
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("ss");       // format hour
-        Date date = calendar.getTime();                             // getting current time
-        final int sec = (60 - Integer.parseInt(simpleDateFormat.format(date))) * 1000; // parsing string to int
+        Calendar settime1 = Calendar.getInstance();
+        sec = (60 - settime1.get(Calendar.SECOND)) * 1000;
+        resettime = SystemClock.uptimeMillis();
         //endregion
 
         //region ---------------------(HANDLER) Special Delay Call (Infinite Loop in an definite delay)--------------------
@@ -155,8 +153,8 @@ public class Background extends Service implements SensorEventListener {
                        // Toast.makeText(getApplicationContext(), "Saving in Progress", Toast.LENGTH_SHORT).show();
                         if(iappendctr == 0 && !append) {
                             compressionflag = false;
-                            Date currentTime = Calendar.getInstance().getTime();
-                            fileName = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate() + "-" + currentTime.getHours() + "-" + currentTime.getMinutes() + "-" + currentTime.getSeconds() + ".csv";
+                            Calendar setnamedate = Calendar.getInstance();
+                            fileName = setnamedate.get(Calendar.YEAR) + "-" + (setnamedate.get(Calendar.MONTH)+1)  + "-" + setnamedate.get(Calendar.DATE)  + "-" + setnamedate.get(Calendar.HOUR)  + "-" + setnamedate.get(Calendar.MINUTE)  + "-" + setnamedate.get(Calendar.SECOND)  + ".csv";
                         }
                         // -------------- Save / Clear -------------
                         if(iappendctr+1 >= limitappend) {
@@ -178,10 +176,11 @@ public class Background extends Service implements SensorEventListener {
                                 }
 
                                 //------------------ Initialize Delay for the next Call -----------------
-                                Date settime = Calendar.getInstance().getTime();
-                                int secnew = (60 - settime.getSeconds()) * 1000; // seconds delay for minute
+                                Calendar settime = Calendar.getInstance();
+                                 sec = (60 - settime.get(Calendar.SECOND)) * 1000; // seconds delay for minute
+
                                 // ----------------- Recursive Call --------------------------
-                                handler.postDelayed(this, secnew);
+                                handler.postDelayed(this, sec);
                                 break;
                             }
                             case "Error":{

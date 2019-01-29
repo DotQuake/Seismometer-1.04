@@ -1,12 +1,13 @@
 package com.example.admindeveloper.seismometer.RealTimeServices;
 
 public class RealTimeController {
-    private final float alpha = 0.8f;
+
     private float[] gravity = {0,0,0};
     private float[] linear_acceleration = {0,0,0};
     private float x,y,z;
 
     public void updateXYZ(float x , float y ,float z){
+        final float alpha = 0.8f;
         gravity[0] = alpha * gravity[0] + (1 - alpha) * x;
         linear_acceleration[0] = x - gravity[0];
         this.x = linear_acceleration[0];

@@ -85,9 +85,9 @@ public class RealTime extends Fragment implements SensorEventListener{
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.realtimelayout,container,false);
-        lineChartX = (LineChart) myView.findViewById(R.id.linechartX);
-        lineChartY = (LineChart) myView.findViewById(R.id.linechartY);
-        lineChartZ = (LineChart) myView.findViewById(R.id.linechartZ);
+        lineChartX =  myView.findViewById(R.id.linechartX);
+        lineChartY =  myView.findViewById(R.id.linechartY);
+        lineChartZ =  myView.findViewById(R.id.linechartZ);
         rtc = new RealTimeController();
         rsdata = new RecordSaveData();
         dgx = new DisplayGraph();
