@@ -74,6 +74,7 @@ public class Background extends Service implements SensorEventListener {
     private LocationListener locationListener;
 
     Runnable runnable;
+    long resettime=0;
 
 
     @SuppressLint("MissingPermission")
@@ -148,8 +149,9 @@ public class Background extends Service implements SensorEventListener {
                 runnable = new Runnable() {
                     @Override
                     public void run() {
-                        // ------------- Se Up -----------
+                        // ------------- Set Up -----------
                         String status;
+                        resettime = SystemClock.uptimeMillis();
                        // Toast.makeText(getApplicationContext(), "Saving in Progress", Toast.LENGTH_SHORT).show();
                         if(iappendctr == 0 && !append) {
                             compressionflag = false;
@@ -260,7 +262,7 @@ public class Background extends Service implements SensorEventListener {
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
-            time = ""+ SystemClock.uptimeMillis() ;
+            time = ""+(SystemClock.uptimeMillis()-resettime);
 
             realTimeController.updateXYZ(sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
             recordSaveData1.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ(), time);
