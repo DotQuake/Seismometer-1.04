@@ -31,7 +31,7 @@ public class RecordSaveData {
     {
         final int samplePerSecond=30;
         sum_of_samples += x_values.size();
-        String[] separated = fileName.split("-");
+        String[] separated = fileName.split("[-|.]");
         String year = separated[0];
         String month = separated[1];
         String day = separated[2];

@@ -154,7 +154,7 @@ public class Background extends Service implements SensorEventListener {
                         if(iappendctr == 0 && !append) {
                             compressionflag = false;
                             Calendar setnamedate = Calendar.getInstance();
-                            fileName = setnamedate.get(Calendar.YEAR) + "-" + (setnamedate.get(Calendar.MONTH)+1)  + "-" + setnamedate.get(Calendar.DATE)  + "-" + setnamedate.get(Calendar.HOUR)  + "-" + setnamedate.get(Calendar.MINUTE)  + "-" + setnamedate.get(Calendar.SECOND)  + ".csv";
+                            fileName = setnamedate.get(Calendar.YEAR) + "-" + (setnamedate.get(Calendar.MONTH)+1)  + "-" + setnamedate.get(Calendar.DATE)  + "-" + setnamedate.get(Calendar.HOUR_OF_DAY)  + "-" + setnamedate.get(Calendar.MINUTE)  + "-" + setnamedate.get(Calendar.SECOND)  + ".csv";
                         }
                         // -------------- Save / Clear -------------
                         if(iappendctr+1 >= limitappend) {
@@ -286,7 +286,7 @@ public class Background extends Service implements SensorEventListener {
         //getting name for the image
         UPLOAD_URL = "http://"+ipaddress+"/data/api/uploaddata.php";
         //String name=(currentTime.getYear()+1900)+"-"+(currentTime.getMonth()+1)+"-"+currentTime.getDate()+"-"+currentTime.getHours()+currentTime.getMinutes()+"-"+currentTime.getSeconds()+".csv";
-        String[] separated = name.split("-");
+        String[] separated = name.split("[-|.]");
         String location = "Lapulapu";
         String year = separated[0];
         String month = separated[1];
