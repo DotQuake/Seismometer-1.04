@@ -89,33 +89,12 @@ public class NavigationDrawer extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.startservice) {
             final Intent intent = new Intent(this,Background.class);
-            /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Input IP Address");
-            final EditText input = new EditText(this);
-            input.setText(R.string.ipaddress);
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-            builder.setPositiveButton("START", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    intent.putExtra("ipaddress",input.getText().toString());
-                    startService(intent);
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    Toast.makeText(getApplicationContext(),"Starting Service Canceled",Toast.LENGTH_SHORT).show();
-                    dialogInterface.cancel();
-                }
-            });
-            builder.show();*/
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            LayoutInflater li = LayoutInflater.from(getApplicationContext());
-            View promptsView = li.inflate(R.layout.alertdialog_layout, null);
+            LayoutInflater li = LayoutInflater.from(this);
+            View promptsView = li.inflate(R.layout.alertdialog_layout,null);
             builder.setTitle("Starting Services");
             builder.setMessage("You need to set first the Location, Ip Address, and Device name of Bluetooth");
-            builder.setView(R.layout.alertdialog_layout);
+            builder.setView(promptsView);
             final EditText ipadres = promptsView.findViewById(R.id.alertipaddress);
             final EditText alertloc = promptsView.findViewById(R.id.alertlocation);
             final EditText device = promptsView.findViewById(R.id.device_name);
