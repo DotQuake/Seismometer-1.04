@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -301,9 +303,14 @@ public class Upload extends Fragment implements View.OnClickListener {
 
         }
         if(v == buttonDelete){
-            //File dir = "/storage/emulated/0/Zip";;
-            File file = new File("/storage/emulated/0/Zip/","2019-1-27-11-22-0.csv.gz");
-            boolean deleted = file.delete();
+            ConnectivityManager connManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+            if (mWifi.isConnected()) {
+                Toast.makeText(getActivity(),"wifi connected",Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(getActivity(),"Not connected",Toast.LENGTH_SHORT).show();
+            }
             /*boolean isSDPresent = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
             boolean isSDSupported = Environment.isExternalStorageRemovable();
             if(isSDPresent && isSDSupported){
