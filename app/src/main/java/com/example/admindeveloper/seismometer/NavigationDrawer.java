@@ -16,9 +16,10 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.InputType;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -88,7 +89,7 @@ public class NavigationDrawer extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.startservice) {
             final Intent intent = new Intent(this,Background.class);
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Input IP Address");
             final EditText input = new EditText(this);
             input.setText(R.string.ipaddress);
@@ -108,8 +109,34 @@ public class NavigationDrawer extends AppCompatActivity
                     dialogInterface.cancel();
                 }
             });
+            builder.show();*/
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            LayoutInflater li = LayoutInflater.from(getApplicationContext());
+            View promptsView = li.inflate(R.layout.alertdialog_layout, null);
+            builder.setTitle("Starting Services");
+            builder.setMessage("You need to set first the Location, Ip Address, and Device name of Bluetooth");
+            builder.setView(R.layout.alertdialog_layout);
+            final EditText ipadres = promptsView.findViewById(R.id.alertipaddress);
+            final EditText alertloc = promptsView.findViewById(R.id.alertlocation);
+            final EditText device = promptsView.findViewById(R.id.device_name);
+            builder.setPositiveButton("START", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    intent.putExtra("ipaddress",ipadres.getText().toString());
+                    intent.putExtra("location",alertloc.getText().toString());
+                    intent.putExtra("device",device.getText().toString());
+                    startService(intent);
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Toast.makeText(getApplicationContext(),"Starting Service Canceled",Toast.LENGTH_SHORT).show();
+                    dialogInterface.cancel();
+                }
+            });
+            builder.create();
             builder.show();
-
         }else if(id == R.id.stopservice){
             stopService(new Intent(this,Background.class));
         }

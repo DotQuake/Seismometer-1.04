@@ -121,7 +121,10 @@ public class Background extends Service implements SensorEventListener {
         //region ---------Initialization ------------------
         StartTime = SystemClock.uptimeMillis();
         ipaddress = intent.getStringExtra("ipaddress");
+
         Toast.makeText(getApplication(), ipaddress, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplication(), intent.getStringExtra("location"), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplication(), intent.getStringExtra("device"), Toast.LENGTH_SHORT).show();
         csvnames = new ArrayList<>();
         zipManager = new ZipManager();
         extras = new Bundle();
