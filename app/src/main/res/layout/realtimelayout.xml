@@ -3,35 +3,37 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/dataGraph"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"></com.jjoe64.graphview.GraphView>
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/linechartX"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"></com.github.mikephil.charting.charts.LineChart>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/linechartY"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"></com.github.mikephil.charting.charts.LineChart>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/linechartZ"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"></com.github.mikephil.charting.charts.LineChart>
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <TextView
+            android:textSize="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/currentTime"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:id="@+id/hourBox"
+            android:layout_marginLeft="10dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:layout_marginLeft="30dp"
+            android:text="@string/minute"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:id="@+id/minuteBox"/>
     </LinearLayout>
 
 </LinearLayout>

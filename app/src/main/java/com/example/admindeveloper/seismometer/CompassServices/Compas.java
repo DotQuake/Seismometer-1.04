@@ -16,6 +16,7 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.example.admindeveloper.seismometer.R;
 
 public class Compas extends Fragment{
@@ -38,7 +39,7 @@ public class Compas extends Fragment{
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.compasslayout,container,false);
-        mcompass = myView.findViewById(R.id.tvcompass);
+        mcompass = myView.findViewById(R.id.displaycompass);
         image = myView.findViewById(R.id.imview);
         cpc = new CompassPageController();
         return myView;
@@ -51,13 +52,14 @@ public class Compas extends Fragment{
             br = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    //String str = (String) intent.getExtras().get("Extra data name").toString();
-                    //Toast.makeText(MainActivity.this,str,Toast.LENGTH_SHORT).show();
-                    //text.setText("Value of Accelerometer: " + str);
-                    float value = Float.parseFloat(intent.getExtras().get("compass").toString());
-                    int deg = (int)Math.floor(value);
-                    //float deg = 0;
-                    cpc.deviceTurned(deg);
+                    if(intent.getAction().equals(DataService.DATA)) {
+                        //String str = (String) intent.getExtras().get("Extra data name").toString();
+                        //Toast.makeText(MainActivity.this,str,Toast.LENGTH_SHORT).show();
+                        //text.setText("Value of Accelerometer: " + str);
+                        int deg = (int) Math.floor(Integer.parseInt(intent.getStringExtra(DataService.GET_COMPASS)));
+                        cpc.deviceTurned(deg);
+                        //float deg = 0;
+                    /*cpc.deviceTurned(deg);
                     if(deg+90 > 360){
 
                         mcompass.setText(""+(deg-270));
@@ -65,13 +67,15 @@ public class Compas extends Fragment{
                     }else{
                         mcompass.setText(""+(deg+90));
                         //displayDirectionText();
+                    }*/
+                        mcompass.setText(String.valueOf(deg));
+                        image.startAnimation(displayAnimation(cpc.getDegree(), currentdegree, image));
+                        currentdegree = -cpc.getDegree();
                     }
-                    image.startAnimation(displayAnimation(cpc.getDegree(),currentdegree,image));
-                    currentdegree = -cpc.getDegree();
                 }
             };
         }
-        IntentFilter filt = new IntentFilter("FILTER"); // before
+        IntentFilter filt = new IntentFilter(DataService.DATA); // before
         getActivity().registerReceiver(br, filt);// before
 
         /* AFTER

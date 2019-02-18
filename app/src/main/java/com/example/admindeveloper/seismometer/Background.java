@@ -2,14 +2,11 @@ package com.example.admindeveloper.seismometer;
 
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -23,6 +20,7 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.example.admindeveloper.seismometer.RealTimeServices.RealTimeController;
 import com.example.admindeveloper.seismometer.UploadServices.ZipManager;
 
@@ -37,11 +35,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 
-public class Background extends Service implements SensorEventListener {
+public class Background extends Service {
 
-    private SensorManager mSensorManager;
-    Bundle extras;
-    Intent i;
     RecordSaveData recordSaveData1;
     RealTimeController realTimeController;
     Handler handler;
@@ -75,6 +70,21 @@ public class Background extends Service implements SensorEventListener {
     Runnable runnable;
     long resettime=0;
 
+    private final BroadcastReceiver mBroadcastReceiver=new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(DataService.DATA)){
+                time = ""+(SystemClock.uptimeMillis()-resettime);
+
+                compass=intent.getStringExtra(DataService.GET_COMPASS);
+                realTimeController.updateXYZ(intent.getFloatExtra(DataService.GET_X,0),
+                                                intent.getFloatExtra(DataService.GET_Y,0),
+                                                intent.getFloatExtra(DataService.GET_Z,0));
+                recordSaveData1.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ(), time);
+
+            }
+        }
+    };
 
     @SuppressLint("MissingPermission")
     @Override
@@ -106,6 +116,8 @@ public class Background extends Service implements SensorEventListener {
         };
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, locationListener);
 
+        IntentFilter intentFilter=new IntentFilter(DataService.DATA);
+        registerReceiver(mBroadcastReceiver,intentFilter);
 
     }
 
@@ -127,18 +139,11 @@ public class Background extends Service implements SensorEventListener {
         Toast.makeText(getApplication(), intent.getStringExtra("device"), Toast.LENGTH_SHORT).show();
         csvnames = new ArrayList<>();
         zipManager = new ZipManager();
-        extras = new Bundle();
-        i = new Intent();
         recordSaveData1 = new RecordSaveData();
         realTimeController = new RealTimeController();
         handler = new Handler();
         //endregion
         Toast.makeText(getApplication(), "Services Enabled", Toast.LENGTH_SHORT).show();
-        //region ---------------------Register Listeners for Sensors( Accelerometer / Orientation) Temporarily
-        mSensorManager = (SensorManager) getSystemService(Activity.SENSOR_SERVICE);
-        mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION).get(0), SensorManager.SENSOR_DELAY_GAME);
-        //endregion
         //region ------------------- Set up for Delay / Start Up --------------------
         Calendar settime1 = Calendar.getInstance();
         sec = (60 - settime1.get(Calendar.SECOND)) * 1000;
@@ -250,38 +255,12 @@ public class Background extends Service implements SensorEventListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mSensorManager.unregisterListener(this);
+        unregisterReceiver(mBroadcastReceiver);
         Toast.makeText(this,"Service Stopped",Toast.LENGTH_SHORT).show();
         handler.removeCallbacks(runnable);
         if(locationManager != null){
             locationManager.removeUpdates(locationListener);
         }
-
-    }
-
-
-    @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-
-            time = ""+(SystemClock.uptimeMillis()-resettime);
-
-            realTimeController.updateXYZ(sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
-            recordSaveData1.recordData(realTimeController.getX(), realTimeController.getY(), realTimeController.getZ(), time);
-            i.putExtra("valueX", String.valueOf(realTimeController.getX()));
-            i.putExtra("valueY", String.valueOf(realTimeController.getY()));
-            i.putExtra("valueZ", String.valueOf(realTimeController.getZ()));
-        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_ORIENTATION) {
-            compass = String.valueOf(sensorEvent.values[0]);
-            i.putExtra("compass", String.valueOf(sensorEvent.values[0]));
-        }
-        i.setAction("FILTER");
-        sendBroadcast(i);
-
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
 

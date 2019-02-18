@@ -1,7 +1,6 @@
 package com.example.admindeveloper.seismometer.RealTimeServices;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,10 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,50 +16,36 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.example.admindeveloper.seismometer.DisplayGraph;
 import com.example.admindeveloper.seismometer.R;
 import com.example.admindeveloper.seismometer.RecordSaveData;
-import com.github.mikephil.charting.charts.LineChart;
+import com.jjoe64.graphview.GraphView;
 
-public class RealTime extends Fragment implements SensorEventListener{
+import java.util.Calendar;
+import java.util.Date;
+
+public class RealTime extends Fragment{
 
     View myView;
-
-    public LineChart lineChartX,lineChartY,lineChartZ;
-    private SensorManager mSensorManager;
-    private Thread thread;
-    DisplayGraph dgx,dgy,dgz;
     RealTimeController rtc;
     RecordSaveData rsdata;
     BroadcastReceiver br;
-    private void smooththread() {
-        if (thread != null){
-            thread.interrupt();
-        }
-        thread = new Thread(new Runnable() {
+    DisplayGraph dataGraphController;
+    GraphView dataGraph;
+    TextView hourBox,minuteBox;
 
-            @Override
-            public void run() {
-                while (true){
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        thread.start();
+    private void displayData(float x , float y , float z) {
+        rtc.updateXYZ(x,y,z);
+        dataGraphController.displayRawDataGraph(rtc.getX(),rtc.getY(),rtc.getZ());
+        Date currentDate=Calendar.getInstance().getTime();
+        hourBox.setText(currentDate.getHours()+" ");
+        minuteBox.setText(currentDate.getMinutes()+" ");
     }
-    private void displayRawDataGraph(float x , float y , float z) {
-            rtc.updateXYZ(x,y,z);
-            dgx.displayRawDataGraph(rtc.getX(),lineChartX);
-            dgy.displayRawDataGraph(rtc.getY(),lineChartY);
-            dgz.displayRawDataGraph(rtc.getZ(),lineChartZ);
-    }
+
     public void showMessage(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
         builder.setCancelable(false);
@@ -85,25 +66,17 @@ public class RealTime extends Fragment implements SensorEventListener{
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.realtimelayout,container,false);
-        lineChartX =  myView.findViewById(R.id.linechartX);
-        lineChartY =  myView.findViewById(R.id.linechartY);
-        lineChartZ =  myView.findViewById(R.id.linechartZ);
         rtc = new RealTimeController();
         rsdata = new RecordSaveData();
-        dgx = new DisplayGraph();
-        dgy = new DisplayGraph();
-        dgz = new DisplayGraph();
-        mSensorManager = (SensorManager) getActivity().getSystemService(Activity.SENSOR_SERVICE);
-        mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_GAME);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1000);
         }
         //showMessage();
-        smooththread();
-        dgx.setup(lineChartX,"X");
-        dgy.setup(lineChartY,"Y");
-        dgz.setup(lineChartZ,"Z");
+        dataGraph=myView.findViewById(R.id.dataGraph);
+        dataGraphController=new DisplayGraph(dataGraph,500);
+        hourBox=myView.findViewById(R.id.hourBox);
+        minuteBox=myView.findViewById(R.id.minuteBox);
         return myView;
     }
 
@@ -137,20 +110,15 @@ public class RealTime extends Fragment implements SensorEventListener{
             br = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    //String str = (String) intent.getExtras().get("Extra data name").toString();
-                    //Toast.makeText(MainActivity.this,str,Toast.LENGTH_SHORT).show();
-                    //text.setText("Value of Accelerometer: " + str);
-                   //float x = Float.parseFloat(intent.getExtras().get("valueX").toString());
-                   //float y = Float.parseFloat(intent.getExtras().get("valueY").toString());
-                   //float z = Float.parseFloat(intent.getExtras().get("valueZ").toString());
-
-                    displayRawDataGraph(Float.parseFloat(intent.getExtras().get("valueX").toString())
-                            ,Float.parseFloat(intent.getExtras().get("valueY").toString())
-                            ,Float.parseFloat(intent.getExtras().get("valueZ").toString()));
+                    if(intent.getAction().equals(DataService.DATA)){
+                        displayData(intent.getFloatExtra(DataService.GET_X,0),
+                                intent.getFloatExtra(DataService.GET_Y,0),
+                                intent.getFloatExtra(DataService.GET_Z,0));
+                    }
                 }
             };
         }
-        IntentFilter filt = new IntentFilter("FILTER"); // before
+        IntentFilter filt = new IntentFilter(DataService.DATA); // before
         getActivity().registerReceiver(br, filt);// before
         /* AFTER
          registerReceiver(br,new IntentFilter("location_update"));
@@ -168,25 +136,12 @@ public class RealTime extends Fragment implements SensorEventListener{
 
     @Override
     public void onDestroy() {
-        thread.interrupt();
-        mSensorManager.unregisterListener(this);
         super.onDestroy();
     }
 
     @Override
     public void onDestroyView() {
-        thread.interrupt();
         super.onDestroyView();
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
-        //displayRawDataGraph(sensorEvent.values[0],sensorEvent.values[1],sensorEvent.values[2]);
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-
     }
     //-----------------------------------------------------------------------------------------------------
 

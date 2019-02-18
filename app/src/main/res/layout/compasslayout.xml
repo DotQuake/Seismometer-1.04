@@ -16,7 +16,7 @@
         android:rotation="-90"/>
 
     <TextView
-        android:id="@+id/tvcompass"
+        android:id="@+id/displaycompass"
         android:layout_width="252dp"
         android:layout_height="38dp"
         android:layout_alignParentTop="true"

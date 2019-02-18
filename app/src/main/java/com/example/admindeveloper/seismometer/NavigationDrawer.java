@@ -21,9 +21,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.example.admindeveloper.seismometer.CompassServices.Compas;
+import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.example.admindeveloper.seismometer.RealTimeServices.RealTime;
 import com.example.admindeveloper.seismometer.UploadServices.Upload;
 
@@ -98,13 +101,34 @@ public class NavigationDrawer extends AppCompatActivity
             final EditText ipadres = promptsView.findViewById(R.id.alertipaddress);
             final EditText alertloc = promptsView.findViewById(R.id.alertlocation);
             final EditText device = promptsView.findViewById(R.id.device_name);
+            final RadioButton externalBtn=promptsView.findViewById(R.id.externalBtn);
+            final RadioButton internalBtn=promptsView.findViewById(R.id.internalBtn);
+            externalBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    device.setEnabled(true);
+                    device.setFocusable(true);
+                    device.setFocusableInTouchMode(true);
+                }
+            });
+            internalBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    device.setEnabled(false);
+                    device.setFocusable(false);
+                }
+            });
             builder.setPositiveButton("START", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     intent.putExtra("ipaddress",ipadres.getText().toString());
                     intent.putExtra("location",alertloc.getText().toString());
-                    intent.putExtra("device",device.getText().toString());
                     startService(intent);
+                    if(externalBtn.isChecked()){
+                        DataService.startServiceFromRemoteDevice(device.getText().toString(),getApplicationContext());
+                    }else{
+                        DataService.startServiceFromInternal(getApplicationContext());
+                    }
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -118,6 +142,7 @@ public class NavigationDrawer extends AppCompatActivity
             builder.show();
         }else if(id == R.id.stopservice){
             stopService(new Intent(this,Background.class));
+            stopService(new Intent(this,DataService.class));
         }
 
         return super.onOptionsItemSelected(item);

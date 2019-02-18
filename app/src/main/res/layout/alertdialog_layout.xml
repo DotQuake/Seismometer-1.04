@@ -22,6 +22,12 @@
             android:gravity="center"/>
         <TextView
             android:layout_width="match_parent"
+            android:layout_height="31sp"
+            android:text="@string/set_data_source"
+            android:textSize="20sp"
+            android:gravity="center"/>
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="46dp"
             android:text="Device Name : "
             android:textSize="20sp"
@@ -46,12 +52,31 @@
         android:id="@+id/alertipaddress"
         android:hint="IP Address"
         android:text="@string/ipaddress"/>
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dataSourceRadioGroup"
+        android:orientation="horizontal">
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/internalBtn"
+            android:textSize="20sp"
+            android:text="@string/internal"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:checked="true"
+            android:id="@+id/externalBtn"
+            android:text="@string/external_device"/>
+    </RadioGroup>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/device_name"
         android:hint="Device Name"
-        android:text="HC06"/>
+        android:text="HC-06"/>
 
     </LinearLayout>
 
