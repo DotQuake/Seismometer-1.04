@@ -70,6 +70,7 @@ public class Background extends Service {
 
     Runnable runnable;
     long resettime=0;
+    int ctr=0;
 
     Boolean mystart = true;
     Boolean myexit = false;
@@ -97,6 +98,7 @@ public class Background extends Service {
 
         try {
             if(mystart){
+                ctr=0;
                 File myDir = new File("storage/emulated/0/Samples");
                 if(!myDir.exists())
                 {
@@ -147,8 +149,9 @@ public class Background extends Service {
                 Toast.makeText(getApplicationContext(), "has been started", Toast.LENGTH_SHORT).show();
                 mystart = false;
             }
-            bw.write(realTimeController.getX()+","+realTimeController.getY()+","+realTimeController.getZ()+"\r\n");
+            bw.write(realTimeController.getX()+","+realTimeController.getY()+","+realTimeController.getZ()+","+(ctr++)+","+time+"\r\n");
             if(myexit) {
+                ctr=0;
                 compressionflag = true;
                 bw.write("       ,       ,       ,,\r\n" +
                         "       ,       ,       ,,\r\n" +
@@ -238,7 +241,7 @@ public class Background extends Service {
         runnable = new Runnable() {
             @Override
             public void run() {
-
+                resettime = SystemClock.uptimeMillis();
                 //somechanges---
 
                 Calendar setnamedate = Calendar.getInstance();
