@@ -4,6 +4,7 @@ import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 
 public class RealTimeController {
 
+    private static Integer calibrateX=0,calibrateY=0,calibrateZ=0;
     private float[] gravity = {0,0,0};
     private float[] linear_acceleration = {0,0,0};
     private float x,y,z;
@@ -23,11 +24,18 @@ public class RealTimeController {
             linear_acceleration[2] = z - gravity[2];
             this.z = linear_acceleration[2];
         }else{
-            this.x=x;
-            this.y=y;
-            this.z=z;
+            this.x=x-RealTimeController.calibrateX;
+            this.y=y-RealTimeController.calibrateY;
+            this.z=z-RealTimeController.calibrateZ;
         }
     }
+
+    public static void setCalibrationValue(Integer x,Integer y,Integer z){
+        RealTimeController.calibrateX=x;
+        RealTimeController.calibrateY=y;
+        RealTimeController.calibrateZ=z;
+    }
+
     public float getX() {
         return x;
     }
