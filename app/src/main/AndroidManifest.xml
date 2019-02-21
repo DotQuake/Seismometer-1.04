@@ -31,6 +31,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".HelpDesk.Help"
+            android:screenOrientation="landscape"/>
         <service android:name=".Background"/>
         <service android:name=".DataAcquisition.DataService"/>
     </application>

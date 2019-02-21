@@ -4,13 +4,19 @@
     <item
         android:id="@+id/startservice"
         android:orderInCategory="100"
-        android:title="Start Services"
+        android:title="@string/start_services"
         android:visible="true"
         app:showAsAction="never" />
     <item
         android:id="@+id/stopservice"
         android:orderInCategory="100"
-        android:title="Stop Services"
+        android:title="@string/stop_services"
+        android:visible="true"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/item_help"
+        android:orderInCategory="100"
+        android:title="@string/help"
         android:visible="true"
         app:showAsAction="never" />
 </menu>

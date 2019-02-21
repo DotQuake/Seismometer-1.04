@@ -18,4 +18,7 @@
     <string name="status">Status: </string>
     <string name="start">Start</string>
     <string name="cancel">Cancel</string>
+    <string name="help">Help</string>
+    <string name="stop_services">Stop Services</string>
+    <string name="start_services">Start Services</string>
 </resources>

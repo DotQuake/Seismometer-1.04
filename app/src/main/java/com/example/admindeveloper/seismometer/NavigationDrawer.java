@@ -1,7 +1,6 @@
 package com.example.admindeveloper.seismometer;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -23,13 +22,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.example.admindeveloper.seismometer.CompassServices.Compas;
 import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
+import com.example.admindeveloper.seismometer.HelpDesk.Help;
 import com.example.admindeveloper.seismometer.RealTimeServices.RealTime;
-import com.example.admindeveloper.seismometer.UploadServices.Upload;
 
 public class NavigationDrawer extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -102,6 +100,9 @@ public class NavigationDrawer extends AppCompatActivity
             stopService(new Intent(this,Background.class));
             stopService(new Intent(this,DataService.class));
             serviceHasBeenStarted=false;
+        }else if(id == R.id.item_help){
+            Intent help = new Intent(NavigationDrawer.this, Help.class);
+            startActivity(help);
         }
 
         return super.onOptionsItemSelected(item);
@@ -177,9 +178,6 @@ public class NavigationDrawer extends AppCompatActivity
                 break;
             case R.id.nav_realtime:
                 fragment = new RealTime();
-                break;
-            case R.id.nav_upload:
-                fragment = new Upload();
                 break;
         }
 
