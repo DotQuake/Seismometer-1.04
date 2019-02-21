@@ -10,9 +10,12 @@
     <string name="real_time">Real Time</string>
     <string name="upload">Upload</string>
     <string name="ipaddress">192.168.254.10</string>
-    <string name="minute">Minute</string>
-    <string name="currentTime">Current Time:</string>
+    <string name="minute">Minute: </string>
+    <string name="currentTime">Current Time: </string>
     <string name="external_device">External</string>
     <string name="internal">Internal</string>
-    <string name="set_data_source">Set Data Source:</string>
+    <string name="set_data_source">Data Source:</string>
+    <string name="status">Status: </string>
+    <string name="start">Start</string>
+    <string name="cancel">Cancel</string>
 </resources>

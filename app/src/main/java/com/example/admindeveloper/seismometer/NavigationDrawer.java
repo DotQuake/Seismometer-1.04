@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -34,6 +35,7 @@ public class NavigationDrawer extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
+    private boolean serviceHasBeenStarted=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +56,7 @@ public class NavigationDrawer extends AppCompatActivity
 
         displaySelectedScreen(R.id.nav_compass);
 
+        showStartServiceDialog();
     }
 
     private void runtime_permission_location(){
@@ -91,63 +94,77 @@ public class NavigationDrawer extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.startservice) {
-            final Intent intent = new Intent(this,Background.class);
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            LayoutInflater li = LayoutInflater.from(this);
-            View promptsView = li.inflate(R.layout.alertdialog_layout,null);
-            builder.setTitle("Starting Services");
-            builder.setMessage("You need to set first the Location, Ip Address, and Device name of Bluetooth");
-            builder.setView(promptsView);
-            final EditText ipadres = promptsView.findViewById(R.id.alertipaddress);
-            final EditText alertloc = promptsView.findViewById(R.id.alertlocation);
-            final EditText device = promptsView.findViewById(R.id.device_name);
-            final RadioButton externalBtn=promptsView.findViewById(R.id.externalBtn);
-            final RadioButton internalBtn=promptsView.findViewById(R.id.internalBtn);
-            externalBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    device.setEnabled(true);
-                    device.setFocusable(true);
-                    device.setFocusableInTouchMode(true);
-                }
-            });
-            internalBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    device.setEnabled(false);
-                    device.setFocusable(false);
-                }
-            });
-            builder.setPositiveButton("START", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    intent.putExtra("ipaddress",ipadres.getText().toString());
-                    intent.putExtra("location",alertloc.getText().toString());
-                    startService(intent);
-                    if(externalBtn.isChecked()){
-                        DataService.startServiceFromRemoteDevice(device.getText().toString(),getApplicationContext());
-                    }else{
-                        DataService.startServiceFromInternal(getApplicationContext());
-                    }
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    Toast.makeText(getApplicationContext(),"Starting Service Canceled",Toast.LENGTH_SHORT).show();
-                    dialogInterface.cancel();
-                }
-            });
-            builder.create();
-            builder.show();
+            if(!DataService.ServiceStarted||!Background.ServiceStarted)
+                showStartServiceDialog();
+            else
+                Toast.makeText(getApplicationContext(),"Service has been started",Toast.LENGTH_SHORT).show();
         }else if(id == R.id.stopservice){
             stopService(new Intent(this,Background.class));
             stopService(new Intent(this,DataService.class));
+            serviceHasBeenStarted=false;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void showStartServiceDialog()
+    {
+        final Intent intent = new Intent(this,Background.class);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater li = LayoutInflater.from(this);
+        View promptsView = li.inflate(R.layout.alertdialog_layout,null);
+        builder.setTitle("Starting Services");
+        builder.setMessage("Provide necessary information below");
+        builder.setView(promptsView);
+        builder.setCancelable(false);
+        final EditText ipadres = promptsView.findViewById(R.id.alertipaddress);
+        final EditText alertloc = promptsView.findViewById(R.id.alertlocation);
+        final EditText device = promptsView.findViewById(R.id.device_name);
+        final RadioButton externalBtn=promptsView.findViewById(R.id.externalBtn);
+        final RadioButton internalBtn=promptsView.findViewById(R.id.internalBtn);
+        final Button startBtn=promptsView.findViewById(R.id.startBtn);
+        final Button cancelBtn=promptsView.findViewById(R.id.cancelBtn);
+        externalBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                device.setEnabled(true);
+                device.setFocusable(true);
+                device.setFocusableInTouchMode(true);
+            }
+        });
+        internalBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                device.setEnabled(false);
+                device.setFocusable(false);
+            }
+        });
+        final AlertDialog alertDialog=builder.create();
+
+        startBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intent.putExtra("ipaddress",ipadres.getText().toString());
+                intent.putExtra("location",alertloc.getText().toString());
+                startService(intent);
+                if(externalBtn.isChecked()){
+                    DataService.startServiceFromRemoteDevice(device.getText().toString(),getApplicationContext());
+                }else{
+                    DataService.startServiceFromInternal(getApplicationContext());
+                }
+                serviceHasBeenStarted=true;
+                alertDialog.dismiss();
+            }
+        });
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(),"Starting Service Canceled",Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
     private void displaySelectedScreen(int itemId) {
         // Handle navigation view item clicks here.
         //creating fragment object

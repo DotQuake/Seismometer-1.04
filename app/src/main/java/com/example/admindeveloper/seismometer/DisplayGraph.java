@@ -2,6 +2,7 @@ package com.example.admindeveloper.seismometer;
 
 import android.graphics.Color;
 
+import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -17,6 +18,7 @@ public class DisplayGraph {
     LineGraphSeries<DataPoint> lineX,lineY,lineZ,pointer;
     private DataPoint[] dataX,dataY,dataZ;
     private int maxSamplesToDisplay;
+    private int updateCount;
 
     private void setPointer(int x){
         DataPoint[] linePointer=new DataPoint[2];
@@ -41,15 +43,15 @@ public class DisplayGraph {
             lineX=new LineGraphSeries<>();
             lineY=new LineGraphSeries<>();
             lineZ=new LineGraphSeries<>();
-            lineX.setThickness(5);
+            lineX.setThickness(3);
             lineX.setColor(Color.MAGENTA);
             lineX.setDrawDataPoints(false);
             lineX.setTitle("X");
-            lineY.setThickness(5);
+            lineY.setThickness(3);
             lineY.setColor(Color.CYAN);
             lineY.setDrawDataPoints(false);
             lineY.setTitle("Y");
-            lineZ.setThickness(5);
+            lineZ.setThickness(3);
             lineZ.setColor(Color.GREEN);
             lineZ.setDrawDataPoints(false);
             lineZ.setTitle("Z");
@@ -60,9 +62,7 @@ public class DisplayGraph {
             dataGraph.addSeries(lineY);
             dataGraph.addSeries(lineZ);
             dataGraph.addSeries(pointer);
-            dataGraph.getViewport().setYAxisBoundsManual(true);
-            dataGraph.getViewport().setMinY(-10000);
-            dataGraph.getViewport().setMaxY(10000);
+            updateDisplayGraph();
             dataGraph.getViewport().setXAxisBoundsManual(true);
             dataGraph.getViewport().setMinX(0);
             dataGraph.getViewport().setMaxX(500);
@@ -70,6 +70,19 @@ public class DisplayGraph {
         }
     }
 
+    public void updateDisplayGraph(){
+        if(DataService.isDataFromDevice()) {
+            dataGraph.getViewport().setYAxisBoundsManual(true);
+            dataGraph.getViewport().setMinY(-32800);
+            dataGraph.getViewport().setMaxY(32800);
+            this.updateCount=50;
+        }else{
+            dataGraph.getViewport().setYAxisBoundsManual(true);
+            dataGraph.getViewport().setMinY(-10);
+            dataGraph.getViewport().setMaxY(10);
+            updateCount=10;
+        }
+    }
     private void setCustomLabel()
     {
         dataGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
@@ -90,7 +103,7 @@ public class DisplayGraph {
         dataX[counter]=new DataPoint(counter,x);
         dataY[counter]=new DataPoint(counter,y);
         dataZ[counter]=new DataPoint(counter++,z);
-        if(counter%50==0){
+        if(counter%updateCount==0){
             lineX.resetData(dataX);
             lineY.resetData(dataY);
             lineZ.resetData(dataZ);

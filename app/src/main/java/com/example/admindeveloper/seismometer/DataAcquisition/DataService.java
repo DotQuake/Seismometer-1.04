@@ -28,14 +28,17 @@ public class DataService extends Service implements SensorEventListener {
     public static final String GET_Z="Get_Z";
     public static final String GET_COMPASS="Get_Compass";
 
-    private static final String START_SERVICE_DEVICE="DataAcquisition.Start_Service_Device";
-    private static final String START_SERVICE_INTERNAL="DataAcquisition.Start_Service_Internal";
+    public  static final String DATASERVICE_STOP="DataAcquisition.Data_Service_Stop";
+    public static final String START_SERVICE_DEVICE="DataAcquisition.Start_Service_Device";
+    public static final String START_SERVICE_INTERNAL="DataAcquisition.Start_Service_Internal";
 
+    public static boolean ServiceStarted=false;
     private static boolean dataFromDevice =false;
     private Intent i=new Intent();
     private static String deg = "0";
     private SensorManager mSensorManager;
     private DataStreamTask dataStream;
+
 
     public static String getDegree(){
         return DataService.deg;
@@ -157,13 +160,11 @@ public class DataService extends Service implements SensorEventListener {
             filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
             registerReceiver(mBroadcastReceiver, filter);
 
-            Bluetooth.setDeviceName(intent.getStringExtra("Device Name"));
             mSensorManager = (SensorManager) getSystemService(Activity.SENSOR_SERVICE);
             mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION).get(0), SensorManager.SENSOR_DELAY_GAME);
             try{
                 Bluetooth.setDeviceName(intent.getExtras().getString("Device Name"));
             }catch (Exception e){}
-            Toast.makeText(getApplicationContext(),"DataService: Finding Device "+Bluetooth.getDeviceName(),Toast.LENGTH_SHORT).show();
             int result=Bluetooth.initializeBluetooth();
             switch(result){
                 case Bluetooth.RESULT_OK:{
@@ -186,13 +187,14 @@ public class DataService extends Service implements SensorEventListener {
             mSensorManager.registerListener(this,mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_GAME);
             mSensorManager.registerListener(this, mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION).get(0), SensorManager.SENSOR_DELAY_GAME);
         }
+        DataService.ServiceStarted=true;
         return START_STICKY;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Toast.makeText(getApplicationContext(),"DataService Started",Toast.LENGTH_SHORT);
+        Toast.makeText(getApplicationContext(),"DataService Started",Toast.LENGTH_SHORT).show();
         dataStream=new DataStreamTask(getApplicationContext());
     }
 
@@ -213,7 +215,6 @@ public class DataService extends Service implements SensorEventListener {
         if(dataStream.getStatus()== AsyncTask.Status.FINISHED)
             dataStream=new DataStreamTask(getApplicationContext());
         dataStream.execute();
-        Toast.makeText(getApplicationContext(),"DataService: Start Stream",Toast.LENGTH_SHORT).show();
     }
 
     private void RFCOMMEstablish(){
@@ -244,6 +245,8 @@ public class DataService extends Service implements SensorEventListener {
         DataService.DeviceConnected=false;
         DataService.ReconnectHasStarted=false;
         Toast.makeText(getApplicationContext(),"DataService Stopped",Toast.LENGTH_SHORT).show();
+        sendBroadcast(new Intent(DataService.DATASERVICE_STOP));
+        DataService.ServiceStarted=false;
         super.onDestroy();
     }
 

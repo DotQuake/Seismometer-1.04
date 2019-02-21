@@ -2,6 +2,7 @@ package com.example.admindeveloper.seismometer.RealTimeServices;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.admindeveloper.seismometer.DataAcquisition.Bluetooth;
 import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.example.admindeveloper.seismometer.DisplayGraph;
 import com.example.admindeveloper.seismometer.R;
@@ -36,7 +38,7 @@ public class RealTime extends Fragment{
     BroadcastReceiver br;
     DisplayGraph dataGraphController;
     GraphView dataGraph;
-    TextView hourBox,minuteBox;
+    TextView hourBox,minuteBox,statusBox;
 
     private void displayData(float x , float y , float z) {
         rtc.updateXYZ(x,y,z);
@@ -77,6 +79,7 @@ public class RealTime extends Fragment{
         dataGraphController=new DisplayGraph(dataGraph,500);
         hourBox=myView.findViewById(R.id.hourBox);
         minuteBox=myView.findViewById(R.id.minuteBox);
+        statusBox=myView.findViewById(R.id.statusBox);
         return myView;
     }
 
@@ -104,21 +107,32 @@ public class RealTime extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
-
-
+        statusBox.setText("Service Stop");
         if(br == null) {
             br = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     if(intent.getAction().equals(DataService.DATA)){
+                        dataGraphController.updateDisplayGraph();
+                        if(!DataService.isDataFromDevice())
+                            statusBox.setText("Internal Mode");
+                        else
+                            statusBox.setText("Connected");
                         displayData(intent.getFloatExtra(DataService.GET_X,0),
                                 intent.getFloatExtra(DataService.GET_Y,0),
                                 intent.getFloatExtra(DataService.GET_Z,0));
+                    }else if(intent.getAction().equals(DataService.DATASERVICE_STOP)){
+                        statusBox.setText("Service Stop");
+                    }else if(intent.getAction().equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)){
+                        if(!statusBox.getText().equals("Service Stop"))
+                            statusBox.setText("Disconnected");
                     }
                 }
             };
         }
         IntentFilter filt = new IntentFilter(DataService.DATA); // before
+        filt.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filt.addAction(DataService.DATASERVICE_STOP);
         getActivity().registerReceiver(br, filt);// before
         /* AFTER
          registerReceiver(br,new IntentFilter("location_update"));
