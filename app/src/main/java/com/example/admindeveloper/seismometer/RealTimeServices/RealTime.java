@@ -9,6 +9,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,6 +20,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +39,8 @@ public class RealTime extends Fragment{
     View myView;
     RealTimeController rtc;
     RecordSaveData rsdata;
-    BroadcastReceiver br;
+    BroadcastReceiver br,wifi_state;
+    ImageView iv_wifi;
     DisplayGraph dataGraphController;
     GraphView dataGraph;
     TextView hourBox,minuteBox,statusBox;
@@ -75,6 +80,7 @@ public class RealTime extends Fragment{
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1000);
         }
         //showMessage();
+        iv_wifi = myView.findViewById(R.id.iv_wifi_status);
         dataGraph=myView.findViewById(R.id.dataGraph);
         dataGraphController=new DisplayGraph(dataGraph,500);
         hourBox=myView.findViewById(R.id.hourBox);
@@ -107,6 +113,26 @@ public class RealTime extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
+        wifi_state = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+
+                if(action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)){
+                    NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                    boolean connected = info.isConnected();
+                    if (connected) {
+                       // Toast.makeText(getActivity(),"wifi connected",Toast.LENGTH_SHORT).show();
+                        iv_wifi.setImageResource(R.drawable.wifi_connected);
+                    }else{
+                        //Toast.makeText(getActivity(),"Not connected",Toast.LENGTH_SHORT).show();
+                        iv_wifi.setImageResource(R.drawable.not_connected);
+                    }
+                }
+            }
+        };
+        getActivity().registerReceiver(wifi_state, new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+
         statusBox.setText("Service Stop");
         if(br == null) {
             br = new BroadcastReceiver() {
@@ -142,8 +168,9 @@ public class RealTime extends Fragment{
     @Override
     public void onPause() {
         super.onPause();
-        if(br != null) {
+        if(br != null || wifi_state != null) {
             getActivity().unregisterReceiver(br); // put unregister here in on pause so that it will unregister if
+            getActivity().unregisterReceiver(wifi_state);
         }
 
     }
