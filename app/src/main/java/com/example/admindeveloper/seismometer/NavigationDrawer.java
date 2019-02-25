@@ -3,6 +3,7 @@ package com.example.admindeveloper.seismometer;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.drm.DrmStore;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -15,6 +16,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -65,6 +67,7 @@ public class NavigationDrawer extends AppCompatActivity
         }
 
     }
+
 
     @Override
     public void onBackPressed() {
@@ -198,5 +201,6 @@ public class NavigationDrawer extends AppCompatActivity
         displaySelectedScreen(item.getItemId());
         return true;
     }
+
 
 }

@@ -28,6 +28,7 @@ import net.gotev.uploadservice.MultipartUploadRequest;
 import net.gotev.uploadservice.ServerResponse;
 import net.gotev.uploadservice.UploadInfo;
 import net.gotev.uploadservice.UploadNotificationConfig;
+import net.gotev.uploadservice.UploadServiceBroadcastReceiver;
 import net.gotev.uploadservice.UploadStatusDelegate;
 
 import java.io.BufferedWriter;
@@ -45,7 +46,7 @@ public class Background extends Service {
     ZipManager zipManager;
     String UPLOAD_URL;
 
-    ArrayList<String> csvnames;
+    ArrayList<String> csvnames, deletenames;
     FileObserver fileObservercsv;
     FileObserver fileObserverzip;
 
@@ -74,6 +75,13 @@ public class Background extends Service {
 
     Boolean mystart = true;
     Boolean myexit = false;
+
+    FileOutputStream fos;
+    BufferedWriter bw;
+
+    String upload_name;
+    int upload_index;
+    boolean successful;
 
     public static boolean ServiceStarted=false;
 
@@ -146,7 +154,6 @@ public class Background extends Service {
                 bw.write(",,,#sync source,\r\n");
                 bw.write("g,g,g,g,\r\n");
                 bw.write("--------,--------,--------,,\r\n");
-                Toast.makeText(getApplicationContext(), "has been started", Toast.LENGTH_SHORT).show();
                 mystart = false;
             }
             bw.write(realTimeController.getX()+","+realTimeController.getY()+","+realTimeController.getZ()+","+(ctr++)+","+time+"\r\n");
@@ -162,7 +169,6 @@ public class Background extends Service {
                 fos.close();
                 myexit = false;
                 mystart = true;
-                Toast.makeText(getApplicationContext(), "has been saved", Toast.LENGTH_SHORT).show();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -217,12 +223,9 @@ public class Background extends Service {
         //region ---------Initialization ------------------
         StartTime = SystemClock.uptimeMillis();
         ipaddress = intent.getStringExtra("ipaddress");
-
-        //Toast.makeText(getApplication(), ipaddress, Toast.LENGTH_SHORT).show();
-        //Toast.makeText(getApplication(), intent.getStringExtra("location"), Toast.LENGTH_SHORT).show();
         location = intent.getStringExtra("location");
-        //Toast.makeText(getApplication(), intent.getStringExtra("device"), Toast.LENGTH_SHORT).show();
         csvnames = new ArrayList<>();
+        deletenames = new ArrayList<>();
         zipManager = new ZipManager();
         realTimeController = new RealTimeController();
         handler = new Handler();
@@ -241,6 +244,7 @@ public class Background extends Service {
         runnable = new Runnable() {
             @Override
             public void run() {
+                myexit = true;
                 resettime = SystemClock.uptimeMillis();
                 //somechanges---
 
@@ -250,7 +254,6 @@ public class Background extends Service {
                 //------------------ Initialize Delay for the next Call -----------------
                 Calendar settime = Calendar.getInstance();
                 sec = (60 - settime.get(Calendar.SECOND)) * 1000; // seconds delay for minute
-                myexit = true;
                 // ----------------- Recursive Call --------------------------
                 handler.postDelayed(this, sec);
             }
@@ -289,10 +292,27 @@ public class Background extends Service {
                         @Override
                         public void run() {
                             // Toast.makeText(getBaseContext(), file + " was compressed!", Toast.LENGTH_SHORT).show();
-                            for(int ictr=0 ; ictr<csvnames.size()-1 ; ictr++) {
-                                uploadMultipart("/storage/emulated/0/Zip/" + csvnames.get(ictr) + ".gz", csvnames.get(ictr),ictr);
+                            if(successful){
+                                for (int i = 0; i < deletenames.size(); i++) {
+                                    try {
+                                        csvnames.remove(deletenames.get(i));
+                                        File file1 = new File("/storage/emulated/0/Samples/", deletenames.get(i));
+                                        boolean deleted1 = file1.delete();
+                                        File file2 = new File("/storage/emulated/0/Zip/", deletenames.get(i) + ".gz");
+                                        boolean deleted2 = file2.delete();
+                                        Toast.makeText(getApplicationContext(), deletenames.get(i)+" deleted", Toast.LENGTH_SHORT).show();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                deletenames.clear();
+                                successful = false;
                             }
-
+                            for(int ictr=0 ; ictr<csvnames.size()-1 ; ictr++) {
+                                upload_name = csvnames.get(ictr);
+                                upload_index = ictr;
+                                uploadMultipart("/storage/emulated/0/Zip/" + csvnames.get(ictr) + ".gz");
+                            }
                         }
                     });
                 }
@@ -317,14 +337,12 @@ public class Background extends Service {
         Background.ServiceStarted=false;
     }
 
-    FileOutputStream fos;
-    BufferedWriter bw;
 
-    public void uploadMultipart(String path, final String name, final int index) {
-        //getting name for the image
+
+    public void uploadMultipart(String path) {
+        //getting name for the string path
         UPLOAD_URL = "http://"+ipaddress+"/data/api/uploaddata.php";
-        //String name=(currentTime.getYear()+1900)+"-"+(currentTime.getMonth()+1)+"-"+currentTime.getDate()+"-"+currentTime.getHours()+currentTime.getMinutes()+"-"+currentTime.getSeconds()+".csv";
-        String[] separated = name.split("[-|.]");
+        String[] separated = upload_name.split("[-|.]");
         String year = separated[0];
         String month = separated[1];
         String day = separated[2];
@@ -332,8 +350,6 @@ public class Background extends Service {
         String minute = separated[4];
 
         //getting the actual path of the image
-        //  String path = FilePath.getPath(getActivity(), filePath);
-
         if (path == null) {
 
             Toast.makeText(this, "NULL PATH", Toast.LENGTH_LONG).show();
@@ -347,7 +363,7 @@ public class Background extends Service {
                 //Creating a multi part request
                 new MultipartUploadRequest(getApplicationContext(), uploadId, UPLOAD_URL)
                         .addFileToUpload(path, "gz") //Adding file
-                        .addParameter("name", name) //Adding text parameter to the request
+                        .addParameter("name", upload_name) //Adding text parameter to the request
                         .addParameter("location", location)
                         .addParameter("month", month)
                         .addParameter("day", day)
@@ -355,11 +371,11 @@ public class Background extends Service {
                         .addParameter("hour", hour)
                         .addParameter("minute", minute)
                         .setNotificationConfig(new UploadNotificationConfig())
-                        .setMaxRetries(2)
+                        .setMaxRetries(1)
                         .setDelegate(new UploadStatusDelegate() {
                             @Override
                             public void onProgress(Context context, UploadInfo uploadInfo) {
-                                Toast.makeText(getApplicationContext(), "Uploading to Server", Toast.LENGTH_SHORT).show();
+                               // Toast.makeText(getApplicationContext(), "Uploading to Server", Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
@@ -370,16 +386,12 @@ public class Background extends Service {
                             @Override
                             public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
                                 Toast.makeText(getApplicationContext(), serverResponse.getBodyAsString(), Toast.LENGTH_SHORT).show();
-                                if(serverResponse.getBodyAsString().equals("Successfully Uploaded yehey")) {
-                                    File file1 = new File("/storage/emulated/0/Samples/", name);
-                                    boolean deleted1 = file1.delete();
-                                    File file2 = new File("/storage/emulated/0/Zip/", name + ".gz");
-                                    boolean deleted2 = file2.delete();
-                                    csvnames.remove(index);
+                                String[] s = serverResponse.getBodyAsString().split(",");
+                                if(s[0].equals("Successfully Uploaded")) {
+                                    deletenames.add(s[1]);
+                                    successful = true;
                                 }
-
                             }
-
                             @Override
                             public void onCancelled(Context context, UploadInfo uploadInfo) {
                                 Toast.makeText(getApplicationContext(), "Uploading Cancelled", Toast.LENGTH_SHORT).show();
