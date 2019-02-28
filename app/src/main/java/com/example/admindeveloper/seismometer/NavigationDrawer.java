@@ -34,7 +34,6 @@ import com.example.admindeveloper.seismometer.RealTimeServices.RealTime;
 public class NavigationDrawer extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-
     private boolean serviceHasBeenStarted=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,11 +62,8 @@ public class NavigationDrawer extends AppCompatActivity
         if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},100);
-
         }
-
     }
-
 
     @Override
     public void onBackPressed() {
