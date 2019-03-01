@@ -57,13 +57,10 @@ public class RecordSaveData {
                 bw.write("#year month day,,,,\r\n");
                 bw.write("#hour minute,,,,\r\n");
                 bw.write("#second,,,,\r\n");
-                bw.write("#uncertainty in seconds,,,,\r\n");
-                bw.write("#peak amplitude,,,,\r\n");
-                bw.write("#frequency at P phase,,,,\r\n");
+                bw.write("#uncertainty in seconds,longitude:,"+gpslong+",,\r\n");
+                bw.write("#peak amplitude,latitude:,"+gpslat+",,,\r\n");
+                bw.write("#frequency at P phase,compass:,"+compass+",,\r\n");
                 bw.write(",,,,\r\n");
-                bw.write("longitude : " + gpslong + "\r\n");
-                bw.write("latitude : " + gpslat + "\r\n");
-                bw.write("compass : " + compass + "\r\n");
                 bw.write("TIME SERIES,,,,\r\n");
                 bw.write("LLPS,LLPS,LLPS,#sitename,\r\n");
                 bw.write("EHE _,EHN _,EHZ _,#component,\r\n");

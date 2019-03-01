@@ -124,13 +124,10 @@ public class Background extends Service {
                 bw.write("#year month day,,,,\r\n");
                 bw.write("#hour minute,,,,\r\n");
                 bw.write("#second,,,,\r\n");
-                bw.write("#uncertainty in seconds,,,,\r\n");
-                bw.write("#peak amplitude,,,,\r\n");
-                bw.write("#frequency at P phase,,,,\r\n");
+                bw.write("#uncertainty in seconds,longitude :, " + longitude + ",,\r\n");
+                bw.write("#peak amplitude,latitude :, " + latitutde + ",,\r\n");
+                bw.write("#frequency at P phase,compass :, " + compass + ",,\r\n");
                 bw.write(",,,,\r\n");
-                bw.write("longitude : " + longitude + "\r\n");
-                bw.write("latitude : " + latitutde + "\r\n");
-                bw.write("compass : " + compass + "\r\n");
                 bw.write("TIME SERIES,,,,\r\n");
                 bw.write("LLPS,LLPS,LLPS,#sitename,\r\n");
                 bw.write("EHE _,EHN _,EHZ _,#component,\r\n");
@@ -179,12 +176,14 @@ public class Background extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
+        Toast.makeText(getApplicationContext(),"onCreate",Toast.LENGTH_SHORT).show();
         locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 longitude = String.valueOf(location.getLongitude());
                 latitutde = String.valueOf(location.getLatitude());
+                Toast.makeText(getApplicationContext(),"Location Changed",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -204,7 +203,8 @@ public class Background extends Service {
                 startActivity(i);
             }
         };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1000,0,locationListener);
 
         IntentFilter intentFilter=new IntentFilter(DataService.DATA);
         registerReceiver(mBroadcastReceiver,intentFilter);
