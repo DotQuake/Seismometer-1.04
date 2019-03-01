@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
@@ -82,6 +83,7 @@ public class Background extends Service {
     String upload_name;
     int upload_index;
     boolean successful;
+    boolean locationUpdated=false;
 
     public static boolean ServiceStarted=false;
 
@@ -105,7 +107,7 @@ public class Background extends Service {
         realTimeController.updateXYZ(x,y,z);
 
         try {
-            if(mystart){
+            if(mystart&&locationUpdated){
                 ctr=0;
                 File myDir = new File("storage/emulated/0/Samples");
                 if(!myDir.exists())
@@ -147,10 +149,14 @@ public class Background extends Service {
                 hold = Integer.parseInt(minute) <= 9 ? hold + "0" + Integer.parseInt(minute) : "" + hold + Integer.parseInt(minute);
                 bw.write(hold + "," + hold + "," + hold + ",#hour minute,\r\n");
                 bw.write(second + "," + second + "," + second + ",#second,\r\n");
-                bw.write(60 + "," + 60 + "," + 60 + ",#samples per second,\r\n");
+                bw.write(860 + "," + 860 + "," + 860 + ",#samples per second,\r\n");
                 bw.write("0,0,0,#sync,\r\n");
                 bw.write(",,,#sync source,\r\n");
                 bw.write("g,g,g,g,\r\n");
+                if(DataService.isDataFromDevice())
+                    bw.write("External,External,External,#data source,\r\n");
+                else
+                    bw.write("Internal,Internal,Internal,#data source.\r\n");
                 bw.write("--------,--------,--------,,\r\n");
                 mystart = false;
             }
@@ -170,7 +176,6 @@ public class Background extends Service {
             }
         }catch (Exception e){
             e.printStackTrace();
-            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -184,7 +189,8 @@ public class Background extends Service {
             public void onLocationChanged(Location location) {
                 longitude = String.valueOf(location.getLongitude());
                 latitutde = String.valueOf(location.getLatitude());
-                Toast.makeText(getApplicationContext(),"Location Changed",Toast.LENGTH_SHORT).show();
+                locationUpdated=true;
+                Toast.makeText(getApplicationContext(),"Location Updated",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -292,7 +298,8 @@ public class Background extends Service {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            // Toast.makeText(getBaseContext(), file + " was compressed!", Toast.LENGTH_SHORT).show();
+                            Log.e("ZIP",file);
+                            //Toast.makeText(getBaseContext(), file, Toast.LENGTH_SHORT).show();
                             if(successful){
                                 for (int i = 0; i < deletenames.size(); i++) {
                                     try {
@@ -330,12 +337,13 @@ public class Background extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Toast.makeText(this,"Service Stopped",Toast.LENGTH_SHORT).show();
         handler.removeCallbacks(runnable);
+        unregisterReceiver(mBroadcastReceiver);
         if(locationManager != null){
             locationManager.removeUpdates(locationListener);
         }
         Background.ServiceStarted=false;
+        Toast.makeText(this,"Service Stopped",Toast.LENGTH_SHORT).show();
     }
 
 
