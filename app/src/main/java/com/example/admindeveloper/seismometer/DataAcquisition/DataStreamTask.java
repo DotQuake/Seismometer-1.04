@@ -14,7 +14,8 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
     private Context applicationContext;
     private Intent i=new Intent();
     private boolean calibrationHasFinish=false;
-    private int calibrateX,calibrateY,calibrateZ,counter=0;
+    private static int calibrateX=0,calibrateY=0,calibrateZ=0;
+    private int counter=0;
     private final int maxCalibrationSamples=100;
 
     public DataStreamTask(Context applicationContext) {
@@ -38,11 +39,11 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
                     byte[] valueX = {mmBuffer[1], mmBuffer[0]};
                     byte[] valueY = {mmBuffer[3], mmBuffer[2]};
                     byte[] valueZ = {mmBuffer[5], mmBuffer[4]};
-                    x = byteToShort(valueX);
-                    y = byteToShort(valueY);
-                    z = byteToShort(valueZ);
 
                     if(calibrationHasFinish) {
+                        x = byteToShort(valueX)-calibrateX;
+                        y = byteToShort(valueY)-calibrateY;
+                        z = byteToShort(valueZ)-calibrateZ;
                         i.putExtra(DataService.GET_X, x);
                         i.putExtra(DataService.GET_Y, y);
                         i.putExtra(DataService.GET_Z, z);
@@ -51,15 +52,14 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
                         applicationContext.sendBroadcast(i);
                     }else{
                         if(counter<maxCalibrationSamples) {
-                            calibrateX += x;
-                            calibrateY += y;
-                            calibrateZ += z;
+                            calibrateX += byteToShort(valueX);
+                            calibrateY += byteToShort(valueY);
+                            calibrateZ += byteToShort(valueZ);
                             counter++;
                         }else{
                             calibrateX/=maxCalibrationSamples;
                             calibrateY/=maxCalibrationSamples;
                             calibrateZ/=maxCalibrationSamples;
-                            RealTimeController.setCalibrationValue(calibrateX,calibrateX,calibrateZ);
                             calibrationHasFinish=true;
                         }
                     }

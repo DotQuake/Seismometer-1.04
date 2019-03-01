@@ -73,9 +73,9 @@ public class DisplayGraph {
     public void updateDisplayGraph(){
         if(DataService.isDataFromDevice()) {
             dataGraph.getViewport().setYAxisBoundsManual(true);
-            dataGraph.getViewport().setMinY(-32800);
-            dataGraph.getViewport().setMaxY(32800);
-            this.updateCount=50;
+            dataGraph.getViewport().setMinY(-2000);
+            dataGraph.getViewport().setMaxY(2000);
+            this.updateCount=500;
         }else{
             dataGraph.getViewport().setYAxisBoundsManual(true);
             dataGraph.getViewport().setMinY(-10);
