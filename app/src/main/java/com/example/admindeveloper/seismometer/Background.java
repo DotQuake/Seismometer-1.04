@@ -147,6 +147,7 @@ public class Background extends Service {
                 hold = Integer.parseInt(minute) <= 9 ? hold + "0" + Integer.parseInt(minute) : "" + hold + Integer.parseInt(minute);
                 bw.write(hold + "," + hold + "," + hold + ",#hour minute,\r\n");
                 bw.write(second + "," + second + "," + second + ",#second,\r\n");
+                bw.write(60 + "," + 60 + "," + 60 + ",#samples per second,\r\n");
                 bw.write("0,0,0,#sync,\r\n");
                 bw.write(",,,#sync source,\r\n");
                 bw.write("g,g,g,g,\r\n");
