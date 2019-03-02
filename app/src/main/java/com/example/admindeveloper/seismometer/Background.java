@@ -152,7 +152,7 @@ public class Background extends Service {
                 bw.write(860 + "," + 860 + "," + 860 + ",#samples per second,\r\n");
                 bw.write("0,0,0,#sync,\r\n");
                 bw.write(",,,#sync source,\r\n");
-                bw.write("g,g,g,g,\r\n");
+                bw.write("g,g,g,#unit,\r\n");
                 if(DataService.isDataFromDevice())
                     bw.write("External,External,External,#data source,\r\n");
                 else
