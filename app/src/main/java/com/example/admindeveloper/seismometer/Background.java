@@ -21,7 +21,9 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.admindeveloper.seismometer.DataAcquisition.Bluetooth;
 import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
+import com.example.admindeveloper.seismometer.DataAcquisition.DataStreamTask;
 import com.example.admindeveloper.seismometer.RealTimeServices.RealTimeController;
 import com.example.admindeveloper.seismometer.UploadServices.ZipManager;
 
@@ -41,6 +43,9 @@ import java.util.Calendar;
 import java.util.UUID;
 
 public class Background extends Service {
+
+
+    public static final String SERVICE_READY="Background.ServiceReady";
 
     RealTimeController realTimeController;
     Handler handler;
@@ -83,7 +88,6 @@ public class Background extends Service {
     String upload_name;
     int upload_index;
     boolean successful;
-    boolean locationUpdated=false;
 
     public static boolean ServiceStarted=false;
 
@@ -105,92 +109,111 @@ public class Background extends Service {
 
         this.compass=compass;
         realTimeController.updateXYZ(x,y,z);
-
-        try {
-            if(mystart&&locationUpdated){
-                ctr=0;
-                File myDir = new File("storage/emulated/0/Samples");
-                if(!myDir.exists())
-                {
-                    myDir.mkdirs();
+        if(Background.ServiceStarted) {
+            try {
+                if (mystart) {
+                    if(DataService.DeviceConnected&&NavigationDrawer.isGainChange()) {
+                        if (!Bluetooth.sendData((char) (NavigationDrawer.getSelectedIndex() + 48)))
+                            Toast.makeText(getApplicationContext(), "Error Updating Gain", Toast.LENGTH_SHORT).show();
+                        else {
+                            DataStreamTask.calibrate();
+                            NavigationDrawer.gainChangeRequestIsDone();
+                            Toast.makeText(getApplicationContext(),"Gain Updated Successfully",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    ctr = 0;
+                    File myDir = new File("storage/emulated/0/Samples");
+                    if (!myDir.exists()) {
+                        myDir.mkdirs();
+                    }
+                    File file = new File(myDir, fileName);
+                    file.createNewFile();
+                    fos = new FileOutputStream(file);
+                    bw = new BufferedWriter(new OutputStreamWriter(fos));
+                    bw.write("ARRIVALS,,,,\r\n");
+                    bw.write("#sitename,,,,\r\n");
+                    bw.write("#onset,,,,\r\n");
+                    bw.write("#first motion,,,,\r\n");
+                    bw.write("#phase,,,,\r\n");
+                    bw.write("#year month day,,,,\r\n");
+                    bw.write("#hour minute,,,,\r\n");
+                    bw.write("#second,,,,\r\n");
+                    bw.write("#uncertainty in seconds,longitude :, " + longitude + ",,\r\n");
+                    bw.write("#peak amplitude,latitude :, " + latitutde + ",,\r\n");
+                    bw.write("#frequency at P phase,compass :, " + compass + ",,\r\n");
+                    bw.write(",,,,\r\n");
+                    bw.write("TIME SERIES,,,,\r\n");
+                    bw.write("LLPS,LLPS,LLPS,#sitename,\r\n");
+                    bw.write("EHE _,EHN _,EHZ _,#component,\r\n");
+                    bw.write(0 + "," + 0 + "," + 0 + ",#authority,\r\n");
+                    String[] separated = fileName.split("[-|.]");
+                    String year = separated[0];
+                    String month = separated[1];
+                    String day = separated[2];
+                    String hour = separated[3];
+                    String minute = separated[4];
+                    String second = separated[5];
+                    String hold = year;
+                    hold = Integer.parseInt(month) <= 9 ? hold + "0" + Integer.parseInt(month) : hold + Integer.parseInt(month);
+                    hold = Integer.parseInt(day) <= 9 ? hold + "0" + Integer.parseInt(day) : "" + hold + Integer.parseInt(day);
+                    bw.write(hold + "," + hold + "," + hold + ",#year month day,\r\n");
+                    hold = hour;
+                    hold = Integer.parseInt(minute) <= 9 ? hold + "0" + Integer.parseInt(minute) : "" + hold + Integer.parseInt(minute);
+                    bw.write(hold + "," + hold + "," + hold + ",#hour minute,\r\n");
+                    bw.write(second + "," + second + "," + second + ",#second,\r\n");
+                    bw.write(860 + "," + 860 + "," + 860 + ",#samples per second,\r\n");
+                    bw.write("0,0,0,#sync,\r\n");
+                    bw.write(",,,#sync source,\r\n");
+                    bw.write("g,g,g,#unit,\r\n");
+                    if (DataService.isDataFromDevice()) {
+                        bw.write("External,External,External,#data source,\r\n");
+                        String conversionValue=String.valueOf(NavigationDrawer.getCurrentSelectedGain());
+                        bw.write(conversionValue+" uV,"+conversionValue+" uV,"+conversionValue+" uV,"+"#conversion value,");
+                    }
+                    else
+                        bw.write("Internal,Internal,Internal,#data source.\r\n");
+                    bw.write("--------,--------,--------,,\r\n");
+                    mystart = false;
                 }
-                File file = new File(myDir,fileName);
-                file.createNewFile();
-                fos = new FileOutputStream(file);
-                bw = new BufferedWriter(new OutputStreamWriter(fos));
-                bw.write("ARRIVALS,,,,\r\n");
-                bw.write("#sitename,,,,\r\n");
-                bw.write("#onset,,,,\r\n");
-                bw.write("#first motion,,,,\r\n");
-                bw.write("#phase,,,,\r\n");
-                bw.write("#year month day,,,,\r\n");
-                bw.write("#hour minute,,,,\r\n");
-                bw.write("#second,,,,\r\n");
-                bw.write("#uncertainty in seconds,longitude :, " + longitude + ",,\r\n");
-                bw.write("#peak amplitude,latitude :, " + latitutde + ",,\r\n");
-                bw.write("#frequency at P phase,compass :, " + compass + ",,\r\n");
-                bw.write(",,,,\r\n");
-                bw.write("TIME SERIES,,,,\r\n");
-                bw.write("LLPS,LLPS,LLPS,#sitename,\r\n");
-                bw.write("EHE _,EHN _,EHZ _,#component,\r\n");
-                bw.write(0 + "," + 0 + "," + 0 + ",#authority,\r\n");
-                String[] separated = fileName.split("[-|.]");
-                String year = separated[0];
-                String month = separated[1];
-                String day = separated[2];
-                String hour = separated[3];
-                String minute = separated[4];
-                String second = separated[5];
-                String hold = year;
-                hold = Integer.parseInt(month) <= 9 ? hold + "0" + Integer.parseInt(month) : hold + Integer.parseInt(month);
-                hold = Integer.parseInt(day) <= 9 ? hold + "0" + Integer.parseInt(day) : "" + hold + Integer.parseInt(day);
-                bw.write(hold + "," + hold + "," + hold + ",#year month day,\r\n");
-                hold = hour;
-                hold = Integer.parseInt(minute) <= 9 ? hold + "0" + Integer.parseInt(minute) : "" + hold + Integer.parseInt(minute);
-                bw.write(hold + "," + hold + "," + hold + ",#hour minute,\r\n");
-                bw.write(second + "," + second + "," + second + ",#second,\r\n");
-                bw.write(860 + "," + 860 + "," + 860 + ",#samples per second,\r\n");
-                bw.write("0,0,0,#sync,\r\n");
-                bw.write(",,,#sync source,\r\n");
-                bw.write("g,g,g,#unit,\r\n");
-                if(DataService.isDataFromDevice())
-                    bw.write("External,External,External,#data source,\r\n");
-                else
-                    bw.write("Internal,Internal,Internal,#data source.\r\n");
-                bw.write("--------,--------,--------,,\r\n");
-                mystart = false;
-            }
-            bw.write(realTimeController.getX()+","+realTimeController.getY()+","+realTimeController.getZ()+","+(ctr++)+","+time+"\r\n");
-            if(myexit) {
-                ctr=0;
-                compressionflag = true;
-                bw.write("       ,       ,       ,,\r\n" +
-                        "       ,       ,       ,,\r\n" +
-                        "END,END,END,,\r\n");
-                bw.flush();
-                bw.close();
-                fos.flush();
-                fos.close();
+                bw.write(realTimeController.getX() + "," + realTimeController.getY() + "," + realTimeController.getZ() + "," + (ctr++) + "," + time + "\r\n");
+                if (myexit) {
+                    ctr = 0;
+                    compressionflag = true;
+                    bw.write("       ,       ,       ,,\r\n" +
+                            "       ,       ,       ,,\r\n" +
+                            "END,END,END,,\r\n");
+                    bw.flush();
+                    bw.close();
+                    fos.flush();
+                    fos.close();
+                    myexit = false;
+                    mystart = true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
                 myexit = false;
                 mystart = true;
             }
-        }catch (Exception e){
-            e.printStackTrace();
         }
     }
 
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
-        Toast.makeText(getApplicationContext(),"onCreate",Toast.LENGTH_SHORT).show();
         locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 longitude = String.valueOf(location.getLongitude());
                 latitutde = String.valueOf(location.getLatitude());
-                locationUpdated=true;
-                Toast.makeText(getApplicationContext(),"Location Updated",Toast.LENGTH_SHORT).show();
+                if(!Background.ServiceStarted)
+                {
+                    Background.ServiceStarted=true;
+                    Intent intent=new Intent();
+                    intent.setAction(Background.SERVICE_READY);
+                    sendBroadcast(intent);
+                }
+                //Toast.makeText(getApplicationContext(),"Location Updated",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -237,7 +260,7 @@ public class Background extends Service {
         realTimeController = new RealTimeController();
         handler = new Handler();
         //endregion
-        Toast.makeText(getApplication(), "Services Enabled", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplication(), "Services Enabled", Toast.LENGTH_SHORT).show();
         //region ------------------- Set up for Delay / Start Up --------------------
         Calendar settime1 = Calendar.getInstance();
         sec = (60 - settime1.get(Calendar.SECOND)) * 1000;
@@ -329,7 +352,6 @@ public class Background extends Service {
         fileObserverzip.startWatching();
         //endregion
 
-        Background.ServiceStarted=true;
         return START_STICKY;
     }
 

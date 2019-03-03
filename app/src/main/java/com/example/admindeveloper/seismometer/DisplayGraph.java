@@ -13,11 +13,12 @@ import java.util.Calendar;
 public class DisplayGraph {
 
     GraphView dataGraph;
+    final int maxSamplesToDisplayExternal=860;
+    final int maxSamplesToDisplayInternal=100;
 
     private int counter=0;
     LineGraphSeries<DataPoint> lineX,lineY,lineZ,pointer;
     private DataPoint[] dataX,dataY,dataZ;
-    private int maxSamplesToDisplay;
     private int updateCount;
 
     private void setPointer(int x){
@@ -26,19 +27,18 @@ public class DisplayGraph {
         linePointer[1]=new DataPoint(x,65535);
         pointer.resetData(linePointer);
     }
-    private void initializeDataGraph(int maxSamplesToDisplay)
+    private void initializeDataGraph()
     {
-        this.maxSamplesToDisplay=maxSamplesToDisplay;
-        dataX=new DataPoint[maxSamplesToDisplay];
-        dataY=new DataPoint[maxSamplesToDisplay];
-        dataZ=new DataPoint[maxSamplesToDisplay];
-        for(int count=0;count<maxSamplesToDisplay;count++){
-            dataX[count]=new DataPoint(count, 0);
-            dataY[count]=new DataPoint(count,0);
-            dataZ[count]=new DataPoint(count,0);
-        }
         if(lineX==null)
         {
+            dataX=new DataPoint[maxSamplesToDisplayExternal];
+            dataY=new DataPoint[maxSamplesToDisplayExternal];
+            dataZ=new DataPoint[maxSamplesToDisplayExternal];
+            for(int count=0;count<maxSamplesToDisplayExternal;count++){
+                dataX[count]=new DataPoint(count, 0);
+                dataY[count]=new DataPoint(count,0);
+                dataZ[count]=new DataPoint(count,0);
+            }
             pointer=new LineGraphSeries<>();
             lineX=new LineGraphSeries<>();
             lineY=new LineGraphSeries<>();
@@ -63,9 +63,6 @@ public class DisplayGraph {
             dataGraph.addSeries(lineZ);
             dataGraph.addSeries(pointer);
             updateDisplayGraph();
-            dataGraph.getViewport().setXAxisBoundsManual(true);
-            dataGraph.getViewport().setMinX(0);
-            dataGraph.getViewport().setMaxX(500);
             lineX.resetData(dataX);lineY.resetData(dataX);lineZ.resetData(dataX);
         }
     }
@@ -75,12 +72,18 @@ public class DisplayGraph {
             dataGraph.getViewport().setYAxisBoundsManual(true);
             dataGraph.getViewport().setMinY(-2000);
             dataGraph.getViewport().setMaxY(2000);
-            this.updateCount=500;
+            dataGraph.getViewport().setXAxisBoundsManual(true);
+            dataGraph.getViewport().setMinX(0);
+            dataGraph.getViewport().setMaxX(maxSamplesToDisplayExternal);
+            this.updateCount=860;
         }else{
             dataGraph.getViewport().setYAxisBoundsManual(true);
             dataGraph.getViewport().setMinY(-10);
             dataGraph.getViewport().setMaxY(10);
             updateCount=10;
+            dataGraph.getViewport().setXAxisBoundsManual(true);
+            dataGraph.getViewport().setMinX(0);
+            dataGraph.getViewport().setMaxX(maxSamplesToDisplayInternal-10);
         }
     }
     private void setCustomLabel()
@@ -109,13 +112,16 @@ public class DisplayGraph {
             lineZ.resetData(dataZ);
             setPointer(counter);
         }
-        counter=counter>=maxSamplesToDisplay?0:counter;
+        if(DataService.isDataFromDevice())
+            counter=counter>=maxSamplesToDisplayExternal?0:counter;
+        else
+            counter=counter>=maxSamplesToDisplayInternal?0:counter;
     }
 
-    public DisplayGraph(GraphView dataGraph, int maxSamplesToDisplay)
+    public DisplayGraph(GraphView dataGraph)
     {
         this.dataGraph=dataGraph;
-        initializeDataGraph(maxSamplesToDisplay);
+        initializeDataGraph();
         setCustomLabel();
     }
 }

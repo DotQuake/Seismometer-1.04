@@ -82,7 +82,7 @@ public class RealTime extends Fragment{
         //showMessage();
         iv_wifi = myView.findViewById(R.id.iv_wifi_status);
         dataGraph=myView.findViewById(R.id.dataGraph);
-        dataGraphController=new DisplayGraph(dataGraph,500);
+        dataGraphController=new DisplayGraph(dataGraph);
         hourBox=myView.findViewById(R.id.hourBox);
         minuteBox=myView.findViewById(R.id.minuteBox);
         statusBox=myView.findViewById(R.id.statusBox);

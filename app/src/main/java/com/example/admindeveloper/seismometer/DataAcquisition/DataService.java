@@ -18,6 +18,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
 
+import com.example.admindeveloper.seismometer.Background;
+
 public class DataService extends Service implements SensorEventListener {
 
     public static final String BLUETOOTH_INIT_FAILED="DataAcquisition.Bluetooth_init_failed";
@@ -126,6 +128,7 @@ public class DataService extends Service implements SensorEventListener {
                     case BluetoothDevice.ACTION_ACL_CONNECTED:
                         DataService.DeviceConnected = true;
                         DataStreamHasStarted=true;
+                        DataStreamTask.calibrate();
                         Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
                         break;
                     case BluetoothDevice.ACTION_ACL_DISCONNECTED:
@@ -194,7 +197,7 @@ public class DataService extends Service implements SensorEventListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        Toast.makeText(getApplicationContext(),"DataService Started",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(),"DataService Started",Toast.LENGTH_SHORT).show();
         dataStream=new DataStreamTask(getApplicationContext());
     }
 
@@ -237,6 +240,7 @@ public class DataService extends Service implements SensorEventListener {
         DataService.DataStreamHasStarted=false;
         if(dataStream.getStatus()== AsyncTask.Status.RUNNING)
             dataStream.cancel(true);
+        DataStreamTask.calibrate();
         myHandler.removeCallbacks(reconnectRunnable);
         if(DataService.isDataFromDevice())
             unregisterReceiver(mBroadcastReceiver);

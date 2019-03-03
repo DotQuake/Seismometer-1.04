@@ -207,7 +207,7 @@ public class Bluetooth
                 Bluetooth.mOutputStream.write(data);
                 return true;
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("BLError",e.getMessage());
             }
         }
         return false;

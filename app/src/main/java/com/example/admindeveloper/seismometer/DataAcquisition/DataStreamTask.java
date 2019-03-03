@@ -4,30 +4,37 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
-import com.example.admindeveloper.seismometer.RealTimeServices.RealTimeController;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class DataStreamTask extends AsyncTask<Void,Void,Void> {
 
+    private static int sampleSkippedCounter=0,calibrationCounter=0;
+    private static boolean calibrationHasFinish=false;
+    private static int calibrateX=0,calibrateY=0,calibrateZ=0;
+
     private Context applicationContext;
     private Intent i=new Intent();
-    private boolean calibrationHasFinish=false;
-    private static int calibrateX=0,calibrateY=0,calibrateZ=0;
-    private int counter=0;
     private final int maxCalibrationSamples=100;
+    private final int maxSampleSkipped=860;
+
+    public static void calibrate(){
+        sampleSkippedCounter=calibrationCounter=0;
+        calibrateX=calibrateY=calibrateZ=0;
+        calibrationHasFinish=false;
+    }
 
     public DataStreamTask(Context applicationContext) {
         this.applicationContext=applicationContext;
         calibrateX=calibrateY=calibrateZ=0;
     }
 
-    private Short byteToShort(byte[] value)
+    private short byteToShort(byte[] value)
     {
         ByteBuffer wrapper=ByteBuffer.wrap(value);
         return wrapper.getShort();
     }
+
     @Override
     protected Void doInBackground(Void... voids) {
         float x,y,z;
@@ -61,16 +68,20 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
                             i.setAction(DataService.DATA);
                             applicationContext.sendBroadcast(i);
                         } else {
-                            if (counter < maxCalibrationSamples) {
-                                calibrateX += byteToShort(valueX);
-                                calibrateY += byteToShort(valueY);
-                                calibrateZ += byteToShort(valueZ);
-                                counter++;
-                            } else {
-                                calibrateX /= maxCalibrationSamples;
-                                calibrateY /= maxCalibrationSamples;
-                                calibrateZ /= maxCalibrationSamples;
-                                calibrationHasFinish = true;
+                            if(sampleSkippedCounter<maxSampleSkipped){
+                                sampleSkippedCounter++;
+                            }else {
+                                if (calibrationCounter < maxCalibrationSamples) {
+                                    calibrateX+=byteToShort(valueX);
+                                    calibrateY+=byteToShort(valueY);
+                                    calibrateZ+=byteToShort(valueZ);
+                                    calibrationCounter++;
+                                } else {
+                                    calibrateX/=maxCalibrationSamples;
+                                    calibrateY/=maxCalibrationSamples;
+                                    calibrateZ/=maxCalibrationSamples;
+                                    calibrationHasFinish = true;
+                                }
                             }
                         }
                     }

@@ -1,9 +1,9 @@
 package com.example.admindeveloper.seismometer;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.drm.DrmStore;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -16,7 +16,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,13 +30,35 @@ import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.example.admindeveloper.seismometer.HelpDesk.Help;
 import com.example.admindeveloper.seismometer.RealTimeServices.RealTime;
 
+import java.util.ArrayList;
+
 public class NavigationDrawer extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private boolean serviceHasBeenStarted=false;
+    private static int currentSelected=2;
+    private static ArrayList<Double> gainList=new ArrayList<Double>();
+    private static boolean gainIsChange=false;
+
+    public static double getCurrentSelectedGain(){
+        return gainList.get(currentSelected);
+    }
+    public static int getSelectedIndex(){
+        return currentSelected;
+    }
+    public static boolean isGainChange(){
+            return gainIsChange;
+    }
+
+    public static void gainChangeRequestIsDone(){
+        gainIsChange=false;
+    }
+
+    private String[] itemList=new String[]{"Gain1","Gain2","Gain3 (Current)","Gain4","Gain5","Gain6"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        gainList.add(187.0);gainList.add(5.125);gainList.add(62.5);gainList.add(31.5);gainList.add(15.625);gainList.add(7.8125);
         setContentView(R.layout.activity_navigation_drawer);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -58,10 +79,10 @@ public class NavigationDrawer extends AppCompatActivity
         showStartServiceDialog();
     }
 
-    private void runtime_permission_location(){
-        if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},100);
+    private void runtime_permission_location() {
+        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 100);
         }
     }
 
@@ -92,21 +113,29 @@ public class NavigationDrawer extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.startservice) {
             showStartServiceDialog();
-        }else if(id == R.id.stopservice){
-            stopService(new Intent(this,Background.class));
-            stopService(new Intent(this,DataService.class));
-            serviceHasBeenStarted=false;
-        }else if(id == R.id.item_help){
+        } else if (id == R.id.stopservice) {
+            stopService(new Intent(this, Background.class));
+            stopService(new Intent(this, DataService.class));
+            String[] stringItem=itemList[currentSelected].split(" ");
+            itemList[currentSelected]=stringItem[0];
+            currentSelected=2;
+            gainIsChange=false;
+            itemList[currentSelected]=itemList[currentSelected]+" "+"(Current)";
+        } else if (id == R.id.item_help) {
             Intent help = new Intent(NavigationDrawer.this, Help.class);
             startActivity(help);
+        } else if(id==R.id.gain){
+            if(DataService.DeviceConnected)
+                displayListOfGain();
+            else
+                Toast.makeText(getApplicationContext(),"External Device is not Connected",Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void showStartServiceDialog()
-    {
-        if(!DataService.ServiceStarted||!Background.ServiceStarted) {
+    private void showStartServiceDialog() {
+        if (!DataService.ServiceStarted || !Background.ServiceStarted) {
             final Intent intent = new Intent(this, Background.class);
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             LayoutInflater li = LayoutInflater.from(this);
@@ -150,7 +179,6 @@ public class NavigationDrawer extends AppCompatActivity
                     } else {
                         DataService.startServiceFromInternal(getApplicationContext());
                     }
-                    serviceHasBeenStarted = true;
                     alertDialog.dismiss();
                 }
             });
@@ -162,9 +190,28 @@ public class NavigationDrawer extends AppCompatActivity
                 }
             });
             alertDialog.show();
-        }
-        else
-            Toast.makeText(getApplicationContext(),"Service has been started",Toast.LENGTH_SHORT).show();
+        } else
+            Toast.makeText(getApplicationContext(), "Service has been started", Toast.LENGTH_SHORT).show();
+    }
+
+    private void displayListOfGain()
+    {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle("Set Gain Dialog");
+        adb.setItems(itemList, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String[] stringItem=itemList[currentSelected].split(" ");
+                itemList[currentSelected]=stringItem[0];
+                currentSelected=which;
+                itemList[currentSelected]=itemList[currentSelected]+" "+"(Current)";
+                gainIsChange=true;
+                Toast.makeText(getApplicationContext(),"Changes will be apply after a minute",Toast.LENGTH_SHORT).show();
+            }
+        });
+        adb.setNeutralButton("Cancel",null);
+        AlertDialog alertDialog=adb.create();
+        alertDialog.show();
     }
     private void displaySelectedScreen(int itemId) {
         // Handle navigation view item clicks here.
