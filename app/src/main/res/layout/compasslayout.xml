@@ -12,8 +12,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="38dp"
-        app:srcCompat="@drawable/compass"
-        android:rotation="-90"/>
+        app:srcCompat="@drawable/compass"/>
 
     <TextView
         android:id="@+id/displaycompass"

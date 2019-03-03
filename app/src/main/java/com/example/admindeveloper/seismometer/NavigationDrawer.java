@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -16,6 +17,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +33,8 @@ import com.example.admindeveloper.seismometer.HelpDesk.Help;
 import com.example.admindeveloper.seismometer.RealTimeServices.RealTime;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NavigationDrawer extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -136,17 +140,17 @@ public class NavigationDrawer extends AppCompatActivity
 
     private void showStartServiceDialog() {
         if (!DataService.ServiceStarted || !Background.ServiceStarted) {
+            Toast.makeText(this,"Enter Required Feilds",Toast.LENGTH_SHORT).show();
             final Intent intent = new Intent(this, Background.class);
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             LayoutInflater li = LayoutInflater.from(this);
             View promptsView = li.inflate(R.layout.alertdialog_layout, null);
             builder.setTitle("Starting Services");
-            builder.setMessage("Provide necessary information below");
             builder.setView(promptsView);
             builder.setCancelable(false);
-            final EditText ipadres = promptsView.findViewById(R.id.alertipaddress);
-            final EditText alertloc = promptsView.findViewById(R.id.alertlocation);
-            final EditText device = promptsView.findViewById(R.id.device_name);
+            final TextInputEditText ipadres = promptsView.findViewById(R.id.alertipaddress);
+            final TextInputEditText alertloc = promptsView.findViewById(R.id.alertlocation);
+            final TextInputEditText device = promptsView.findViewById(R.id.device_name);
             final RadioButton externalBtn = promptsView.findViewById(R.id.externalBtn);
             final RadioButton internalBtn = promptsView.findViewById(R.id.internalBtn);
             final Button startBtn = promptsView.findViewById(R.id.startBtn);
@@ -154,6 +158,7 @@ public class NavigationDrawer extends AppCompatActivity
             externalBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    device.setVisibility(View.VISIBLE);
                     device.setEnabled(true);
                     device.setFocusable(true);
                     device.setFocusableInTouchMode(true);
@@ -162,6 +167,7 @@ public class NavigationDrawer extends AppCompatActivity
             internalBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    device.setVisibility(View.INVISIBLE);
                     device.setEnabled(false);
                     device.setFocusable(false);
                 }
@@ -171,15 +177,30 @@ public class NavigationDrawer extends AppCompatActivity
             startBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    intent.putExtra("ipaddress", ipadres.getText().toString());
-                    intent.putExtra("location", alertloc.getText().toString());
-                    startService(intent);
-                    if (externalBtn.isChecked()) {
-                        DataService.startServiceFromRemoteDevice(device.getText().toString(), getApplicationContext());
-                    } else {
-                        DataService.startServiceFromInternal(getApplicationContext());
+                    if(TextUtils.isEmpty(ipadres.getText().toString().trim()) ||
+                            TextUtils.isEmpty(alertloc.getText().toString().trim())) {
+                    ipadres.setError("Fields can't be Empty");
+                    alertloc.setError("Fields can't be Empty");
+                    }else {
+                        if(isIpAddress(ipadres.getText().toString())) {
+                            if (externalBtn.isChecked() && TextUtils.isEmpty(device.getText().toString().trim())) {
+                                device.setError("Fields can't be Empty");
+                            } else {
+                                intent.putExtra("ipaddress", ipadres.getText().toString());
+                                intent.putExtra("location", alertloc.getText().toString());
+                                startService(intent);
+                                if (externalBtn.isChecked()) {
+                                    DataService.startServiceFromRemoteDevice(device.getText().toString(), getApplicationContext());
+                                } else {
+                                    DataService.startServiceFromInternal(getApplicationContext());
+                                }
+                                alertDialog.dismiss();
+                            }
+                        }else {
+                            ipadres.setError("Wrong IP Address Format");
+                        }
                     }
-                    alertDialog.dismiss();
+
                 }
             });
             cancelBtn.setOnClickListener(new View.OnClickListener() {
@@ -192,6 +213,15 @@ public class NavigationDrawer extends AppCompatActivity
             alertDialog.show();
         } else
             Toast.makeText(getApplicationContext(), "Service has been started", Toast.LENGTH_SHORT).show();
+    }
+    public static boolean isIpAddress(String ipAddress) {
+        String IPADDRESS_PATTERN = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+        Pattern pattern = Pattern.compile(IPADDRESS_PATTERN);
+        Matcher matcher = pattern.matcher(ipAddress);
+        return matcher.matches();
     }
 
     private void displayListOfGain()

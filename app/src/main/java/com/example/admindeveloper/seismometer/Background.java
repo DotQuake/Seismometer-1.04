@@ -291,7 +291,7 @@ public class Background extends Service {
         handler.postDelayed(runnable, sec); // calling handler for infinite loop
         //endregion
 
-        //region --------- FileObserver for Compression -------
+        //region --------- FileObserver for Compression and Upload -------
         final String csvpath = android.os.Environment.getExternalStorageDirectory().toString() + "/Samples/";
         fileObservercsv = new FileObserver(csvpath,FileObserver.ALL_EVENTS) {
             @Override
@@ -304,6 +304,27 @@ public class Background extends Service {
                             // Toast.makeText(getBaseContext(), file + " was saved!", Toast.LENGTH_SHORT).show();
                             zipManager.compressGzipFile("Samples/" + file,  file + ".gz");  // Compressing Data
                             compressionflag = false;
+                            if(successful){
+                                for (int i = 0; i < deletenames.size(); i++) {
+                                    try {
+                                        csvnames.remove(deletenames.get(i));
+                                        File file1 = new File("/storage/emulated/0/Samples/", deletenames.get(i));
+                                        boolean deleted1 = file1.delete();
+                                        File file2 = new File("/storage/emulated/0/Zip/", deletenames.get(i) + ".gz");
+                                        boolean deleted2 = file2.delete();
+                                        Toast.makeText(getApplicationContext(), deletenames.get(i)+" deleted", Toast.LENGTH_SHORT).show();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                deletenames.clear();
+                                successful = false;
+                            }
+                            for(int ictr=0 ; ictr<csvnames.size()-1 ; ictr++) {
+                                upload_name = csvnames.get(ictr);
+                                upload_index = ictr;
+                                uploadMultipart("/storage/emulated/0/Zip/" + csvnames.get(ictr) + ".gz");
+                            }
                         }
                     });
                 }
@@ -311,7 +332,7 @@ public class Background extends Service {
         };
         fileObservercsv.startWatching();
         //endregion
-
+/*
         //region  -------- FileObserver for Sending Data to Database -------------
         final String zippath = android.os.Environment.getExternalStorageDirectory().toString() + "/Zip/";
         fileObserverzip = new FileObserver(zippath,FileObserver.ALL_EVENTS) {
@@ -351,6 +372,7 @@ public class Background extends Service {
         };
         fileObserverzip.startWatching();
         //endregion
+        */
 
         return START_STICKY;
     }
