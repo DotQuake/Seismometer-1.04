@@ -35,6 +35,7 @@ public class Bluetooth
     private static Boolean scanDeviceNameOnly=true;
     private static InputStream mInputStream;
     private static OutputStream mOutputStream;
+    private static boolean startDiscoveryProcess=false;
 
     private static Thread loopDiscovery=new Thread(new Runnable() {
         @Override
@@ -44,7 +45,7 @@ public class Bluetooth
                     mBluetoothAdapter.cancelDiscovery();
                 }
                 mBluetoothAdapter.startDiscovery();
-                while(true){
+                while(Bluetooth.startDiscoveryProcess){
                     if(!mBluetoothAdapter.isDiscovering()){
                         mBluetoothAdapter.startDiscovery();
                     }
@@ -70,7 +71,13 @@ public class Bluetooth
     }
 
     public static boolean registerAsBluetoothDevice(BluetoothDevice bluetoothDevice){
-        if(scanDeviceNameOnly){
+        if(bluetoothDevice.getName().equals(Bluetooth.deviceName)) {
+            Bluetooth.bluetoothDevice=bluetoothDevice;
+            return true;
+        }
+        else
+            return false;
+        /*if(scanDeviceNameOnly){
             if(bluetoothDevice.getName().equals(Bluetooth.deviceName)) {
                 Bluetooth.bluetoothDevice=bluetoothDevice;
                 return true;
@@ -86,7 +93,7 @@ public class Bluetooth
                 else
                     return false;
             }catch (Exception e){return false;}
-        }
+        }*/
     }
 
     public static BluetoothDevice getBluetoothDevice() {
@@ -149,11 +156,14 @@ public class Bluetooth
     }
 
     public static void startDiscovery(){
+        Bluetooth.startDiscoveryProcess=true;
         loopDiscovery.start();
     }
 
     public static void stopDiscovery(){
-        loopDiscovery.stop();
+        Bluetooth.startDiscoveryProcess=false;
+        if(mBluetoothAdapter.isDiscovering())
+            mBluetoothAdapter.cancelDiscovery();
     }
 
     public static int startRFCOMMEstablish(){

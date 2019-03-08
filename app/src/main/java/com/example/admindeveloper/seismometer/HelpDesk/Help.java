@@ -48,8 +48,19 @@ public class Help extends AppCompatActivity {
             "       <p><b>Compass Button</b>" +
             "        - Switching the view to Compass View (Default)</p>\n" +
             "       <p><b>Real Time Button</b>" +
-            "        - Switching the view to Real Time View and we can see the graph taken from the sensor data</p>\n";
-
+            "        - Switching the view to Real Time View and we can see the graph taken from the sensor data</p>\n"+
+            "       <p><b>Set Gain</b>" +
+            "        - Sets the sensitivity of analog signal converter</p>\n"+
+            "       <p><b>Gain in terms of Volts</b>\n" +
+            "        -The items below will show you the value of ADC changes at specific voltage signal</p>\n"+
+            "        <p>Gain/3 ==> 187.5 uV</p>\n"+
+            "        <p>Gain/2 ==> 125 uV</p>\n"+
+            "        <p>Gainx1 ==> 62.5 uV</p>\n"+
+            "        <p>Gainx2 ==> 31.25 uV</p>\n"+
+            "        <p>Gain*4 ==> 15.625V uV</p>\n"+
+            "        <p>-The values above is important for conversion of analog signal into raw data. For example, " +
+            "If the value of analog signal is in 1.5V using Gainx1, then the value of ADC is in 24,000 counts. The formula of getting the ADC value is:</p>\n"+
+            "       <p>ADC Value = Input Voltage/Gain in terms of Volts</p>\n";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

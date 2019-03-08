@@ -168,7 +168,7 @@ public class Background extends Service {
                     if (DataService.isDataFromDevice()) {
                         bw.write("External,External,External,#data source,\r\n");
                         String conversionValue=String.valueOf(NavigationDrawer.getCurrentSelectedGain());
-                        bw.write(conversionValue+" uV,"+conversionValue+" uV,"+conversionValue+" uV,"+"#conversion value,");
+                        bw.write(conversionValue+" uV,"+conversionValue+" uV,"+conversionValue+" uV,"+"#conversion value,\r\n");
                     }
                     else
                         bw.write("Internal,Internal,Internal,#data source.\r\n");

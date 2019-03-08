@@ -3,6 +3,8 @@ package com.example.admindeveloper.seismometer.DataAcquisition;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,6 +19,18 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
     private Intent i=new Intent();
     private final int maxCalibrationSamples=100;
     private final int maxSampleSkipped=860;
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        Log.e("DataStream","Finished");
+    }
+
+    @Override
+    protected void onCancelled(Void aVoid) {
+        super.onCancelled(aVoid);
+        Log.e("DataStream","Cancelled");
+    }
 
     public static void calibrate(){
         sampleSkippedCounter=calibrationCounter=0;
@@ -38,15 +52,16 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
     @Override
     protected Void doInBackground(Void... voids) {
         float x,y,z;
-        byte[] mmBuffer=new byte[8];
+        byte[] mmBuffer=new byte[7];
         while(!isCancelled()) {
             try {
-                while (Bluetooth.getmInputStream().available() >= 8 && !isCancelled()) {
+                while (Bluetooth.getmInputStream().available() >= 7 && !isCancelled()) {
                     Bluetooth.getmInputStream().read(mmBuffer);
-                    if(mmBuffer[0]==0x00&&mmBuffer[1]==0x00) {
-                        byte[] valueX = {mmBuffer[3], mmBuffer[2]};
-                        byte[] valueY = {mmBuffer[5], mmBuffer[4]};
-                        byte[] valueZ = {mmBuffer[7], mmBuffer[6]};
+                    Log.e("DataStream","Runnng");
+                    if(mmBuffer[0]==0x00) {
+                        byte[] valueX = {mmBuffer[2], mmBuffer[1]};
+                        byte[] valueY = {mmBuffer[4], mmBuffer[3]};
+                        byte[] valueZ = {mmBuffer[6], mmBuffer[5]};
 
                         if (calibrationHasFinish) {
                             x = byteToShort(valueX);
@@ -89,6 +104,7 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
             } catch (IOException e) {
             }
         }
+        Log.e("DataStream","Finish");
         return null;
     }
 }

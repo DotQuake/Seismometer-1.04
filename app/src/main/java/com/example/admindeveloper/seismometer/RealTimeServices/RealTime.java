@@ -76,9 +76,7 @@ public class RealTime extends Fragment{
         rtc = new RealTimeController();
         rsdata = new RecordSaveData();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1000);
-        }
+
         //showMessage();
         iv_wifi = myView.findViewById(R.id.iv_wifi_status);
         dataGraph=myView.findViewById(R.id.dataGraph);
@@ -87,20 +85,6 @@ public class RealTime extends Fragment{
         minuteBox=myView.findViewById(R.id.minuteBox);
         statusBox=myView.findViewById(R.id.statusBox);
         return myView;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case 1000:{
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    Toast.makeText(getActivity(),"Permission Granted", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(getActivity(),"Permission not granted", Toast.LENGTH_SHORT).show();
-                    getActivity().finish();
-                }
-            }
-        }
     }
 
 

@@ -16,9 +16,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.admindeveloper.seismometer.Background;
+import com.example.admindeveloper.seismometer.NavigationDrawer;
 
 public class DataService extends Service implements SensorEventListener {
 
@@ -60,6 +62,7 @@ public class DataService extends Service implements SensorEventListener {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             applicationContext.startForegroundService(intent);
+           // applicationContext.startService(intent);
         } else {
             applicationContext.startService(intent);
         }
@@ -70,6 +73,7 @@ public class DataService extends Service implements SensorEventListener {
         intent.setAction(DataService.START_SERVICE_INTERNAL);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             applicationContext.startForegroundService(intent);
+            //applicationContext.startService(intent);
         } else {
             applicationContext.startService(intent);
         }
@@ -89,7 +93,7 @@ public class DataService extends Service implements SensorEventListener {
         }
     };
 
-    private static boolean ReconnectHasStarted=false;
+    private static  boolean ReconnectHasStarted=false;
     public static boolean DeviceConnected=false;
     private static boolean DataStreamHasStarted=false;
 
@@ -123,7 +127,7 @@ public class DataService extends Service implements SensorEventListener {
                                 Bluetooth.stopDiscovery();
                                 RFCOMMEstablish();
                             }
-                        } catch (Exception e){}
+                        } catch (Exception e){Log.e("DiscoveryException",e.getMessage());}
                         break;
                     case BluetoothDevice.ACTION_ACL_CONNECTED:
                         DataService.DeviceConnected = true;
@@ -156,7 +160,6 @@ public class DataService extends Service implements SensorEventListener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent.getAction().equals(DataService.START_SERVICE_DEVICE)){
             DataService.dataFromDevice =true;
-
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
             filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
@@ -175,6 +178,7 @@ public class DataService extends Service implements SensorEventListener {
                     break;
                 }
                 case Bluetooth.RESULT_QUERY_FAILED:{
+                    Toast.makeText(getApplicationContext(),"Start Discovery, Please make sure the device is on",Toast.LENGTH_SHORT).show();
                     Bluetooth.startDiscovery();
                     break;
                 }
@@ -210,10 +214,11 @@ public class DataService extends Service implements SensorEventListener {
 
     public void StartDataStream(){
         if(!DataService.DataStreamHasStarted) {
-            if(Bluetooth.sendData('D'))
+            if(Bluetooth.sendData('2'))
                 DataService.DataStreamHasStarted=true;
             else
                 RFCOMMEstablish();
+
         }
         if(dataStream.getStatus()== AsyncTask.Status.FINISHED)
             dataStream=new DataStreamTask(getApplicationContext());
@@ -233,7 +238,7 @@ public class DataService extends Service implements SensorEventListener {
     @Override
     public void onDestroy() {
         if(DataStreamHasStarted) {
-            if(!Bluetooth.sendData('D')){
+            if(!Bluetooth.sendData('2')){
                 Toast.makeText(this, "Please Restart The Device", Toast.LENGTH_SHORT).show();
             }
         }

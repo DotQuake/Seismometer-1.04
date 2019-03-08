@@ -5,6 +5,7 @@ import android.graphics.Color;
 import com.example.admindeveloper.seismometer.DataAcquisition.DataService;
 import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -57,12 +58,15 @@ public class DisplayGraph {
             lineZ.setTitle("Z");
             pointer.setColor(Color.BLACK);
             pointer.setThickness(5);
+            pointer.setTitle("Cursor");
             setPointer(0);
             dataGraph.addSeries(lineX);
             dataGraph.addSeries(lineY);
             dataGraph.addSeries(lineZ);
             dataGraph.addSeries(pointer);
             updateDisplayGraph();
+            dataGraph.getLegendRenderer().setVisible(true);
+            dataGraph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
             lineX.resetData(dataX);lineY.resetData(dataX);lineZ.resetData(dataX);
         }
     }
