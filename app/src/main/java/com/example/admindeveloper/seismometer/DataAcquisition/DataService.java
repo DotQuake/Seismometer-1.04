@@ -60,23 +60,13 @@ public class DataService extends Service implements SensorEventListener {
         }else{
             intent.putExtra("Device Name",deviceName);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            applicationContext.startForegroundService(intent);
-           // applicationContext.startService(intent);
-        } else {
-            applicationContext.startService(intent);
-        }
+        applicationContext.startService(intent);
     }
     public static void startServiceFromInternal(Context applicationContext)
     {
         Intent intent = new Intent(applicationContext,DataService.class);
         intent.setAction(DataService.START_SERVICE_INTERNAL);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            applicationContext.startForegroundService(intent);
-            //applicationContext.startService(intent);
-        } else {
-            applicationContext.startService(intent);
-        }
+        applicationContext.startService(intent);
     }
 
     private final static Handler myHandler=new Handler();
