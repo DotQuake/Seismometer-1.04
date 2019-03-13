@@ -105,7 +105,6 @@ public class Background extends Service {
 
     private void saveData(float x,float y,float z,String compass)
     {
-        time = ""+(SystemClock.uptimeMillis()-resettime);
 
         this.compass=compass;
         realTimeController.updateXYZ(x,y,z);
@@ -164,18 +163,20 @@ public class Background extends Service {
                     bw.write(860 + "," + 860 + "," + 860 + ",#samples per second,\r\n");
                     bw.write("0,0,0,#sync,\r\n");
                     bw.write(",,,#sync source,\r\n");
-                    bw.write("g,g,g,#unit,\r\n");
                     if (DataService.isDataFromDevice()) {
+                        bw.write("count,count,count,#unit,\r\n");
                         bw.write("External,External,External,#data source,\r\n");
                         String conversionValue=String.valueOf(NavigationDrawer.getCurrentSelectedGain());
                         bw.write(conversionValue+" uV,"+conversionValue+" uV,"+conversionValue+" uV,"+"#conversion value,\r\n");
                     }
-                    else
+                    else {
+                        bw.write("g,g,g,#unit,\r\n");
                         bw.write("Internal,Internal,Internal,#data source.\r\n");
+                    }
                     bw.write("--------,--------,--------,,\r\n");
                     mystart = false;
                 }
-                bw.write(realTimeController.getX() + "," + realTimeController.getY() + "," + realTimeController.getZ() + "," + (ctr++) + "," + time + "\r\n");
+                bw.write(realTimeController.getX() + "," + realTimeController.getY() + "," + realTimeController.getZ() + ",,\r\n");
                 if (myexit) {
                     ctr = 0;
                     compressionflag = true;

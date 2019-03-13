@@ -11,47 +11,47 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
-public class Bluetooth
-{
-    public final static int RESULT_OK=0;
-    public final static int RESULT_BLUETOOTH_NOT_SUPPORTED=1;
-    public final static int RESULT_BLUETOOTH_CANNOT_ENABLE=2;
-    public final static int RESULT_RFCOMM_ESTABLISH=3;
-    public final static int RESULT_RFCOMM_CANNOT_ESTABLISH=4;
-    public final static int RESULT_SOCKET_CANNOT_CONNECT=5;
-    public final static int RESULT_SOCKET_CANNOT_CLOSE=6;
-    public final static int RESULT_CANNOT_CREATE_RFCOMM=7;
-    public final static int RESULT_CANNOT_GET_INPUT_STREAM=8;
-    public final static int RESULT_CANNOT_GET_OUTPUT_STREAM=9;
-    public final static int RESULT_BLUETOOTH_TURNING_ON=10;
-    public final static int RESULT_QUERY_FAILED=11;
+public class Bluetooth {
+    public final static int RESULT_OK = 0;
+    public final static int RESULT_BLUETOOTH_NOT_SUPPORTED = 1;
+    public final static int RESULT_BLUETOOTH_CANNOT_ENABLE = 2;
+    public final static int RESULT_RFCOMM_ESTABLISH = 3;
+    public final static int RESULT_RFCOMM_CANNOT_ESTABLISH = 4;
+    public final static int RESULT_SOCKET_CANNOT_CONNECT = 5;
+    public final static int RESULT_SOCKET_CANNOT_CLOSE = 6;
+    public final static int RESULT_CANNOT_CREATE_RFCOMM = 7;
+    public final static int RESULT_CANNOT_GET_INPUT_STREAM = 8;
+    public final static int RESULT_CANNOT_GET_OUTPUT_STREAM = 9;
+    public final static int RESULT_BLUETOOTH_TURNING_ON = 10;
+    public final static int RESULT_QUERY_FAILED = 11;
 
     private static BluetoothDevice bluetoothDevice;
     private static BluetoothSocket bluetoothSocket;
     private static BluetoothAdapter mBluetoothAdapter;
-    private static String deviceName="HC-06";
-    private static String deviceAdress="";
-    private static String deviceUUID="00001101-0000-1000-8000-00805F9B34FB";
-    private static Boolean scanDeviceNameOnly=true;
+    private static String deviceName = "HC-06";
+    private static String deviceAdress = "";
+    private static String deviceUUID = "00001101-0000-1000-8000-00805F9B34FB";
+    private static Boolean scanDeviceNameOnly = true;
     private static InputStream mInputStream;
     private static OutputStream mOutputStream;
-    private static boolean startDiscoveryProcess=false;
+    private static boolean startDiscoveryProcess = false;
 
-    private static Thread loopDiscovery=new Thread(new Runnable() {
+    private static Thread loopDiscovery = new Thread(new Runnable() {
         @Override
         public void run() {
-            try{
+            try {
                 if (mBluetoothAdapter.isDiscovering()) {
                     mBluetoothAdapter.cancelDiscovery();
                 }
                 mBluetoothAdapter.startDiscovery();
-                while(Bluetooth.startDiscoveryProcess){
-                    if(!mBluetoothAdapter.isDiscovering()){
+                while (Bluetooth.startDiscoveryProcess) {
+                    if (!mBluetoothAdapter.isDiscovering()) {
                         mBluetoothAdapter.startDiscovery();
                     }
                 }
+            } catch (Exception e) {
+                Log.d("loopDiscovery Thread", "Thread Stopped!");
             }
-            catch (Exception e){Log.d("loopDiscovery Thread","Thread Stopped!");}
         }
     });
 
@@ -60,7 +60,7 @@ public class Bluetooth
     }
 
     public static String getDeviceAdress() {
-        if(deviceAdress!=null)
+        if (deviceAdress != null)
             return deviceAdress;
         else
             return null;
@@ -70,12 +70,11 @@ public class Bluetooth
         Bluetooth.deviceUUID = deviceUUID;
     }
 
-    public static boolean registerAsBluetoothDevice(BluetoothDevice bluetoothDevice){
-        if(bluetoothDevice.getName().equals(Bluetooth.deviceName)) {
-            Bluetooth.bluetoothDevice=bluetoothDevice;
+    public static boolean registerAsBluetoothDevice(BluetoothDevice bluetoothDevice) {
+        if (bluetoothDevice.getName().equals(Bluetooth.deviceName)) {
+            Bluetooth.bluetoothDevice = bluetoothDevice;
             return true;
-        }
-        else
+        } else
             return false;
         /*if(scanDeviceNameOnly){
             if(bluetoothDevice.getName().equals(Bluetooth.deviceName)) {
@@ -104,29 +103,29 @@ public class Bluetooth
         Bluetooth.deviceName = deviceName;
     }
 
-    public static void setDeviceAdress(String deviceAdress,Boolean scanDeviceNameOnly) {
+    public static void setDeviceAdress(String deviceAdress, Boolean scanDeviceNameOnly) {
         Bluetooth.deviceAdress = deviceAdress;
-        Bluetooth.scanDeviceNameOnly=scanDeviceNameOnly;
+        Bluetooth.scanDeviceNameOnly = scanDeviceNameOnly;
     }
 
-    public static void disableBluetooth(){
-        if(mBluetoothAdapter!=null)
+    public static void disableBluetooth() {
+        if (mBluetoothAdapter != null)
             mBluetoothAdapter.disable();
     }
-    public static int initializeBluetooth()
-    {
+
+    public static int initializeBluetooth() {
         Bluetooth.mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (Bluetooth.mBluetoothAdapter == null) {
             return RESULT_BLUETOOTH_NOT_SUPPORTED;
         } else {
             if (!Bluetooth.mBluetoothAdapter.isEnabled()) {
-                if(Bluetooth.mBluetoothAdapter.enable()){
+                if (Bluetooth.mBluetoothAdapter.enable()) {
                     return RESULT_BLUETOOTH_TURNING_ON;
-                }else{
+                } else {
                     return RESULT_BLUETOOTH_CANNOT_ENABLE;
                 }
-            }else{
-                if(Bluetooth.queryDevice())
+            } else {
+                if (Bluetooth.queryDevice())
                     return RESULT_OK;
                 else
                     return RESULT_QUERY_FAILED;
@@ -134,43 +133,41 @@ public class Bluetooth
         }
     }
 
-    public static boolean queryDevice()
-    {
-            Set<BluetoothDevice> pairedDevices = Bluetooth.mBluetoothAdapter.getBondedDevices();
-            if (pairedDevices.size() > 0) {
-                // There are paired devices. Get the name and address of each paired device.
-                for (BluetoothDevice device : pairedDevices) {
-                    if (device.getName().equals("HC-06")) {
-                        if(!scanDeviceNameOnly&&device.getAddress().equals(Bluetooth.deviceAdress)) {
-                            Bluetooth.bluetoothDevice = device;
-                            return true;
-                        }
-                        else if(scanDeviceNameOnly){
-                            Bluetooth.bluetoothDevice=device;
-                            return true;
-                        }
+    public static boolean queryDevice() {
+        Set<BluetoothDevice> pairedDevices = Bluetooth.mBluetoothAdapter.getBondedDevices();
+        if (pairedDevices.size() > 0) {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                if (device.getName().equals("HC-06")) {
+                    if (!scanDeviceNameOnly && device.getAddress().equals(Bluetooth.deviceAdress)) {
+                        Bluetooth.bluetoothDevice = device;
+                        return true;
+                    } else if (scanDeviceNameOnly) {
+                        Bluetooth.bluetoothDevice = device;
+                        return true;
                     }
                 }
             }
-            return false;
+        }
+        return false;
     }
 
-    public static void startDiscovery(){
-        Bluetooth.startDiscoveryProcess=true;
+    public static void startDiscovery() {
+        Bluetooth.startDiscoveryProcess = true;
         loopDiscovery.start();
     }
 
-    public static void stopDiscovery(){
-        Bluetooth.startDiscoveryProcess=false;
-        if(mBluetoothAdapter.isDiscovering())
+    public static void stopDiscovery() {
+        Bluetooth.startDiscoveryProcess = false;
+        if (mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
     }
 
-    public static int startRFCOMMEstablish(){
-        if(bluetoothDevice!=null) {
-            Bluetooth.mInputStream=null;
-            Bluetooth.mOutputStream=null;
-            Bluetooth.bluetoothSocket=null;
+    public static int startRFCOMMEstablish() {
+        if (bluetoothDevice != null) {
+            Bluetooth.mInputStream = null;
+            Bluetooth.mOutputStream = null;
+            Bluetooth.bluetoothSocket = null;
             try {
                 // Get a BluetoothSocket to connect with the given BluetoothDevice.
                 // MY_UUID is the app's UUID string, also used in the server code.
@@ -195,13 +192,13 @@ public class Bluetooth
                 }
             }
             try {
-                mInputStream=bluetoothSocket.getInputStream();
+                mInputStream = bluetoothSocket.getInputStream();
             } catch (IOException e) {
                 Log.d("RFCOMM Function Error", e.getMessage());
                 return Bluetooth.RESULT_CANNOT_GET_INPUT_STREAM;
             }
             try {
-                mOutputStream=bluetoothSocket.getOutputStream();
+                mOutputStream = bluetoothSocket.getOutputStream();
             } catch (IOException e) {
                 Log.d("RFCOMM Function Error", e.getMessage());
                 return Bluetooth.RESULT_CANNOT_GET_OUTPUT_STREAM;
@@ -211,6 +208,13 @@ public class Bluetooth
         return Bluetooth.RESULT_RFCOMM_CANNOT_ESTABLISH;
     }
 
+    public static void closeSocket() {
+        if(bluetoothSocket.isConnected()) {
+            try {
+                bluetoothSocket.close();
+            }catch (Exception e){}
+        }
+    }
     public static boolean sendData(char data){
         if(Bluetooth.mOutputStream!=null){
             try {

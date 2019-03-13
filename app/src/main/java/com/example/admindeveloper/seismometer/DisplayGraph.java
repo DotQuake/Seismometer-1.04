@@ -28,6 +28,7 @@ public class DisplayGraph {
         linePointer[1]=new DataPoint(x,65535);
         pointer.resetData(linePointer);
     }
+
     private void initializeDataGraph()
     {
         if(lineX==null)
@@ -90,22 +91,6 @@ public class DisplayGraph {
             dataGraph.getViewport().setMaxX(maxSamplesToDisplayInternal-10);
         }
     }
-    private void setCustomLabel()
-    {
-        dataGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
-            @Override
-            public String formatLabel(double value, boolean isValueX) {
-                if (isValueX) {
-                    // show normal x values
-                    return Calendar.getInstance().getTime().getSeconds()+" s";
-                } else {
-                    // show currency for y values
-                    return super.formatLabel(value, isValueX);
-                }
-            }
-        });
-    }
-
     public void displayRawDataGraph(float x , float y , float z) {
         dataX[counter]=new DataPoint(counter,x);
         dataY[counter]=new DataPoint(counter,y);
@@ -121,6 +106,23 @@ public class DisplayGraph {
         else
             counter=counter>=maxSamplesToDisplayInternal?0:counter;
     }
+    private void setCustomLabel()
+    {
+        dataGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
+            @Override
+            public String formatLabel(double value, boolean isValueX) {
+                if (isValueX) {
+                    // show normal x values
+                    return Calendar.getInstance().get(Calendar.SECOND)+" s";
+                } else {
+                    // show currency for y values
+                    return super.formatLabel(value, isValueX);
+                }
+            }
+        });
+    }
+
+
 
     public DisplayGraph(GraphView dataGraph)
     {

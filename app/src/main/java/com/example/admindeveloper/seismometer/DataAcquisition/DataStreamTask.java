@@ -3,6 +3,7 @@ package com.example.admindeveloper.seismometer.DataAcquisition;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,18 +20,6 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
     private Intent i=new Intent();
     private final int maxCalibrationSamples=100;
     private final int maxSampleSkipped=860;
-
-    @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        Log.e("DataStream","Finished");
-    }
-
-    @Override
-    protected void onCancelled(Void aVoid) {
-        super.onCancelled(aVoid);
-        Log.e("DataStream","Cancelled");
-    }
 
     public static void calibrate(){
         sampleSkippedCounter=calibrationCounter=0;
@@ -57,22 +46,20 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
             try {
                 while (Bluetooth.getmInputStream().available() >= 7 && !isCancelled()) {
                     Bluetooth.getmInputStream().read(mmBuffer);
-                    Log.e("DataStream","Runnng");
                     if(mmBuffer[0]==0x00) {
                         byte[] valueX = {mmBuffer[2], mmBuffer[1]};
                         byte[] valueY = {mmBuffer[4], mmBuffer[3]};
                         byte[] valueZ = {mmBuffer[6], mmBuffer[5]};
-
                         if (calibrationHasFinish) {
                             x = byteToShort(valueX);
                             y = byteToShort(valueY);
                             z = byteToShort(valueZ);
-                            if(x>=0)
+                            /*if(x>=0)
                                 x--;
                             if(y>=0)
                                 y--;
                             if(z>=0)
-                                z--;
+                                z--;*/
                             x=x-calibrateX;
                             y=y-calibrateY;
                             z=z-calibrateZ;
@@ -104,7 +91,6 @@ public class DataStreamTask extends AsyncTask<Void,Void,Void> {
             } catch (IOException e) {
             }
         }
-        Log.e("DataStream","Finish");
         return null;
     }
 }

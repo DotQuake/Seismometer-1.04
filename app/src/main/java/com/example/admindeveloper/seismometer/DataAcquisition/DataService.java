@@ -3,7 +3,12 @@ package com.example.admindeveloper.seismometer.DataAcquisition;
 import android.app.Activity;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHidDevice;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothSocket;
+import android.companion.BluetoothDeviceFilter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +19,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -35,6 +41,7 @@ public class DataService extends Service implements SensorEventListener {
     public  static final String DATASERVICE_STOP="DataAcquisition.Data_Service_Stop";
     public static final String START_SERVICE_DEVICE="DataAcquisition.Start_Service_Device";
     public static final String START_SERVICE_INTERNAL="DataAcquisition.Start_Service_Internal";
+    public static final String REQUEST_RESTART="DataAcquisition.Start_Service_Internal";
 
     public static boolean ServiceStarted=false;
     private static boolean dataFromDevice =false;
@@ -42,6 +49,8 @@ public class DataService extends Service implements SensorEventListener {
     private static String deg = "0";
     private SensorManager mSensorManager;
     private DataStreamTask dataStream;
+
+    private boolean dataStreamFail=false;
 
 
     public static String getDegree(){
@@ -83,6 +92,22 @@ public class DataService extends Service implements SensorEventListener {
         }
     };
 
+    private Runnable watchDogRunnable=new Runnable() {
+        @Override
+        public void run() {
+            if(dataStreamFail){
+                if(dataStream.getStatus()==AsyncTask.Status.RUNNING) {
+                    Log.e("BLE", "DataStream cannot Catch-up");
+                    dataStream.cancel(true);
+                    Bluetooth.closeSocket();
+                }
+            }else{
+                dataStreamFail=true;
+                myHandler.postDelayed(watchDogRunnable,2000);
+            }
+        }
+    };
+
     private static  boolean ReconnectHasStarted=false;
     public static boolean DeviceConnected=false;
     private static boolean DataStreamHasStarted=false;
@@ -119,20 +144,27 @@ public class DataService extends Service implements SensorEventListener {
                             }
                         } catch (Exception e){Log.e("DiscoveryException",e.getMessage());}
                         break;
-                    case BluetoothDevice.ACTION_ACL_CONNECTED:
+                    case BluetoothDevice.ACTION_ACL_CONNECTED: {
                         DataService.DeviceConnected = true;
-                        DataStreamHasStarted=true;
+                        DataStreamHasStarted = true;
                         DataStreamTask.calibrate();
+                        myHandler.postDelayed(watchDogRunnable,5000);
                         Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
                         break;
-                    case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                    }
+                    case BluetoothDevice.ACTION_ACL_DISCONNECTED: {
                         DataService.DeviceConnected = false;
-                        DataStreamHasStarted=false;
-                        if(dataStream.getStatus()== AsyncTask.Status.RUNNING)
+                        DataStreamHasStarted = false;
+                        if (dataStream.getStatus() == AsyncTask.Status.RUNNING)
                             dataStream.cancel(true);
                         Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
                         StartReconnect();
                         break;
+                    }
+                    case DATA: {
+                        dataStreamFail=false;
+                        break;
+                    }
                 }
             }
         }
@@ -154,6 +186,8 @@ public class DataService extends Service implements SensorEventListener {
             filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
             filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
             filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+            filter.addAction(DataService.DATA);
+
             registerReceiver(mBroadcastReceiver, filter);
 
             mSensorManager = (SensorManager) getSystemService(Activity.SENSOR_SERVICE);

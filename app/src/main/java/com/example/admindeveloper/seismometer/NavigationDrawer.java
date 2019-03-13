@@ -58,7 +58,7 @@ public class NavigationDrawer extends AppCompatActivity
         gainIsChange=false;
     }
 
-    private String[] itemList=new String[]{"Gain/3","Gain/2","Gainx1 (Current)","Gainx2","Gainx4"};
+    private String[] itemList=new String[]{"Gain/3","Gain/2","Gainx1 (Current)","Gainx2","Gainx4","Gainx8"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
