@@ -157,9 +157,15 @@ public class Background extends Service {
                     bw.write(hold + "," + hold + "," + hold + ",#year month day,\r\n");
                     hold = hour;
                     hold = Integer.parseInt(minute) <= 9 ? hold + "0" + Integer.parseInt(minute) : "" + hold + Integer.parseInt(minute);
+                    if(hold.length()<4)
+                        hold="0"+hold;
                     bw.write(hold + "," + hold + "," + hold + ",#hour minute,\r\n");
                     bw.write(second + "," + second + "," + second + ",#second,\r\n");
-                    bw.write(860 + "," + 860 + "," + 860 + ",#samples per second,\r\n");
+                    if (DataService.isDataFromDevice()) {
+                        bw.write(860 + "," + 860 + "," + 860 + ",#samples per second,\r\n");
+                    }else{
+                        bw.write(50 + "," + 50 + "," + 50 + ",#samples per second,\r\n");
+                    }
                     bw.write("0,0,0,#sync,\r\n");
                     bw.write(",,,#sync source,\r\n");
                     if (DataService.isDataFromDevice()) {
