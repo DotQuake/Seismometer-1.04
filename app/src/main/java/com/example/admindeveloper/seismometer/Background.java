@@ -67,8 +67,8 @@ public class Background extends Service {
 
     String ipaddress;
 
-    String longitude;
-    String latitutde;
+    String longitude="123.8811021";
+    String latitutde="10.2944536";
     String compass;
     String location;
 
@@ -105,7 +105,6 @@ public class Background extends Service {
 
     private void saveData(float x,float y,float z,String compass)
     {
-
         this.compass=compass;
         realTimeController.updateXYZ(x,y,z);
         if(Background.ServiceStarted) {
@@ -207,13 +206,6 @@ public class Background extends Service {
             public void onLocationChanged(Location location) {
                 longitude = String.valueOf(location.getLongitude());
                 latitutde = String.valueOf(location.getLatitude());
-                if(!Background.ServiceStarted)
-                {
-                    Background.ServiceStarted=true;
-                    Intent intent=new Intent();
-                    intent.setAction(Background.SERVICE_READY);
-                    sendBroadcast(intent);
-                }
                 //Toast.makeText(getApplicationContext(),"Location Updated",Toast.LENGTH_SHORT).show();
             }
 
@@ -252,6 +244,7 @@ public class Background extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, final int startId) {
         //region ---------Initialization ------------------
+        Log.e("BLE","START");
         StartTime = SystemClock.uptimeMillis();
         ipaddress = intent.getStringExtra("ipaddress");
         location = intent.getStringExtra("location");
@@ -375,6 +368,13 @@ public class Background extends Service {
         //endregion
         */
 
+        if(!Background.ServiceStarted)
+        {
+            Background.ServiceStarted=true;
+            Intent serviceReadyIntent=new Intent();
+            serviceReadyIntent.setAction(Background.SERVICE_READY);
+            sendBroadcast(serviceReadyIntent);
+        }
         return START_STICKY;
     }
 

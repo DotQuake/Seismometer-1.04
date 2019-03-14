@@ -58,6 +58,7 @@ public class Help extends AppCompatActivity {
             "        <p>Gainx1 ==> 62.5 uV</p>\n"+
             "        <p>Gainx2 ==> 31.25 uV</p>\n"+
             "        <p>Gain*4 ==> 15.625V uV</p>\n"+
+            "        <p>Gain*8 ==> 7.8125 μV</p>\n"+
             "        <p>-The values above is important for conversion of analog signal into raw data. For example, " +
             "If the value of analog signal is in 1.5V using Gainx1, then the value of ADC is in 24,000 counts. The formula of getting the ADC value is:</p>\n"+
             "       <p>ADC Value = Input Voltage/Gain in terms of Volts</p>\n";
