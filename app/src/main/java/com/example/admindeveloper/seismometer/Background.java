@@ -67,8 +67,8 @@ public class Background extends Service {
 
     String ipaddress;
 
-    String longitude="123.8811021";
-    String latitutde="10.2944536";
+    String longitude;
+    String latitutde;
     String compass;
     String location;
 
@@ -213,6 +213,13 @@ public class Background extends Service {
                 longitude = String.valueOf(location.getLongitude());
                 latitutde = String.valueOf(location.getLatitude());
                 //Toast.makeText(getApplicationContext(),"Location Updated",Toast.LENGTH_SHORT).show();
+                if(!Background.ServiceStarted)
+                {
+                    Background.ServiceStarted=true;
+                    Intent serviceReadyIntent=new Intent();
+                    serviceReadyIntent.setAction(Background.SERVICE_READY);
+                    sendBroadcast(serviceReadyIntent);
+                }
             }
 
             @Override
@@ -374,13 +381,7 @@ public class Background extends Service {
         //endregion
         */
 
-        if(!Background.ServiceStarted)
-        {
-            Background.ServiceStarted=true;
-            Intent serviceReadyIntent=new Intent();
-            serviceReadyIntent.setAction(Background.SERVICE_READY);
-            sendBroadcast(serviceReadyIntent);
-        }
+
         return START_STICKY;
     }
 

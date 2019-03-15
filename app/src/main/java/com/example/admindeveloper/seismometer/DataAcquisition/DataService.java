@@ -103,7 +103,7 @@ public class DataService extends Service implements SensorEventListener {
                 }
             }else{
                 dataStreamFail=true;
-                myHandler.postDelayed(watchDogRunnable,2000);
+                myHandler.postDelayed(watchDogRunnable,500);
             }
         }
     };
